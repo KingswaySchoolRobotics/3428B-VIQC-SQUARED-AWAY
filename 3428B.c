@@ -5,6 +5,7 @@
 /***********************************************************************************************/
 //																			Setup Code																							/
 /***********************************************************************************************/
+float Heighti = -10;
 float Height0 = 0; //
 float Height1 = 0; //
 float Height2 = 0; //
@@ -48,57 +49,7 @@ bool TurnDegrees (float varTurnDegrees) {
 	return true;
 }
 
-//Driver-Control Style Selection Function
-void LeftD (){
-	arcadeControl(ChB, ChA, 15);
-	armControl(ArmLeft, BtnLUp, BtnLDown, 100);
-	armControl(ArmRight, BtnLUp, BtnLDown, 100);
-	displayText(0, "LeftDrive");
-};
-void RightD (){
-	armControl(ArmLeft, BtnLUp, BtnLDown, 100);
-	armControl(ArmRight, BtnLUp, BtnLDown, 100);
-	displayText(0, "RightDrive");
-	//arcadeControl(ChC, ChD, 15);
-	// RawCod
-
-	float RightSpeed;
-	float LeftSpeed;
-
-	if(abs(vexRT[ChD]) <= abs(15) && abs(vexRT[ChC]) <= abs(15))
-	{
-		RightSpeed = 0;
-		LeftSpeed	= 0;
-	}
-	else
-	{
-		RightSpeed= ((getJoystickValue(ChD) - getJoystickValue(ChC))/2);
-		LeftSpeed = ((getJoystickValue(ChD) + getJoystickValue(ChC))/2);
-
-		if(nGlobalJoyScaledValue != nMaxJoyScaleValue)
-		{
-			RightSpeed = RightSpeed * (nGlobalJoyScaledValue / 100.0);
-			LeftSpeed 	= LeftSpeed * (nGlobalJoyScaledValue / 100.0);
-			setMotorSpeed(Right,RightSpeed);
-			setMotorSpeed(Left,LeftSpeed);
-		}
-	}
-
-};
-
-void SplitLeftD (){
-	arcadeControl(ChC, ChA, 15);
-	armControl(ArmLeft, BtnLUp, BtnLDown, 100);
-	armControl(ArmRight, BtnLUp, BtnLDown, 100);
-	displayText(0, "Split L");
-};
-void SplitRightD (){
-	arcadeControl(ChB, ChD, 15);
-	armControl(ArmLeft, BtnLUp, BtnLDown, 100);
-	armControl(ArmRight, BtnLUp, BtnLDown, 100);
-	displayText(0, "Split R");
-};
-void TankD (){
+void DriveCode (){
 	if(abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {	//if the absoloute value of ChA is above 20 or the absoloute value of ChD is above 15 then allow the Motors to
 		setMotorSpeed(Left, getJoystickValue(ChA)); //set the value of the motor to the value of the controller joystick
 		setMotorSpeed(Right, getJoystickValue(ChD)); //set the value of the motor to the value of the controller joystick
@@ -106,27 +57,7 @@ void TankD (){
 	else { setMotorSpeed(Left, 0);	// if nothing is happening on the controller set the motor speed to 0
 		setMotorSpeed(Right, 0); // if nothing is happening on the controller set the motor speed to 0
 	};
-	armControl(ArmLeft, BtnLUp, BtnLDown, 100);
-	armControl(ArmRight, BtnLUp, BtnLDown, 100);
-	displayText(0, "Tank");
 };
-
-
-void DriveSelect (float DriveStyle) {
-
-	if (DriveStyle == 1) { // Left Control
-		LeftD();
-		} else if (DriveStyle == 2) { // Right Control
-		RightD();
-		} else if  (DriveStyle == 3) { // Split Left Control
-		SplitLeftD();
-		} else if  (DriveStyle == 4) { // Split Right Control
-		SplitRightD();
-		} else if  (DriveStyle == 5) { // Tank Control
-		TankD();
-	};
-};
-
 //E-STOP AND MOTOR DIAGNOSTICS
 void ESTOP (float delay) { // if emergency stop buttons are pushed stop all motor and blink red on touch led
 	if ((getJoystickValue(BtnEDown)&&(getJoystickValue(BtnFDown) ) || (overTemp==true)||(currentLimitFlag==true))) {
@@ -136,12 +67,7 @@ void ESTOP (float delay) { // if emergency stop buttons are pushed stop all moto
 			setTouchLEDBlinkTime(LED, 12.5, 7.5);
 			stopAllMotors();
 			playSound(soundCarAlarm2);
-			Height0 = 0; //Floor
-			Height1 = 0; //Place HighScored Hub and Move MultiPusher Over Field Lines
-			Height2 = 0; //Position HighScored Hub
-			Height3 = 0; //Static Height / Moving height for balance
-			Height4 = 0; //Bonus Hub Position
-			Height5 = 0; //Bonus Hub PickUp
+		//insert preset heights
 			int ArmPresetValue = 0; // the preset number that tells the preset code how high to move the arm
 		};
 		setMotorTarget(ArmLeft, Height1, 100);
@@ -372,15 +298,11 @@ void AutonSelect(float Variations) {
 				setMotorSpeed(ArmLeft, 100);
 				setMotorSpeed(ArmRight, 100);
 			};
-
 			break;
-
 
 		case 2:
 			resetMotorEncoder(ArmLeft);  //Resets Left Arm Motor Encoder to 0
-
 			resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
-
 			while(true) {//while the program is running do this:
 				displayText(1, "AutonStarted ");
 				displayText(2, "Variation: Bonus and Hang");
@@ -413,10 +335,8 @@ void AutonSelect(float Variations) {
 		case 3:
 			resetMotorEncoder(ArmLeft);  //Resets Left Arm Motor Encoder to 0
 			resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
-
 			while(true) //while the program is running do this:
 			{
-
 				//Display Code
 				displayTextLine(0, "Arm=%d", ((getMotorEncoder(ArmLeft)) + (getMotorEncoder(ArmRight)))/2); //Displays Average of motor encoders position
 				displaySensorValues(3, Main_Gyro);
@@ -444,7 +364,6 @@ void AutonSelect(float Variations) {
 				wait(1.5, seconds);
 				moveMotorTarget(Left, -360, 50);
 				moveMotorTarget(Right, -360, 50);
-
 				break;
 			}
 			break;
@@ -452,14 +371,12 @@ void AutonSelect(float Variations) {
 		case 4:
 			displayText(1, "AutonStarted ");
 			displayText(2, "Variation: Test");
-
 			while(true) //while the program is running do this:
 			{
 				while(TurnDegrees(45)){};
 				while(true){wait(100);};
 			}
 			break;
-
 		};
 	};
 }
@@ -474,9 +391,6 @@ float robotAngle = 0;
 float robotPosition = 0;
 float dL = 0;
 float dR = 0;
-
-
-
 int ticksPerRev = 360;
 float diameter = 2.5;
 float radius = 1.25;
@@ -499,14 +413,12 @@ task odomTask()
 		yaxisPos = radius/2 * (dR + dL) * cos(robotAngle);
 		Test1 = atan(xaxisPos);
 		Test2 = atan(yaxisPos);
-
 		/*	displayVariableValues(line1,xaxisPos);
 		displayVariableValues(line2,yaxisPos);
 		displayVariableValues(line3,robotPosition);
 		displayVariableValues(line4, robotAngle);
 		displayVariableValues(line5, getGyroDegreesFloat(Main_Gyro));
 		*/
-
 		if(abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {	//if the absoloute value of ChA is above 20 or the absoloute value of ChD is above 15 then allow the Motors to
 			setMotorSpeed(Left, getJoystickValue(ChA)); //set the value of the motor to the value of the controller joystick
 			setMotorSpeed(Right, getJoystickValue(ChD)); //set the value of the motor to the value of the controller joystick
@@ -533,22 +445,17 @@ task odomTask()
 /***********************************************************************************************/
 //																			Main Code																							  /
 /***********************************************************************************************/
-
 task main()
 {
 	while (true) {
 		//Driving
-		DriveSelect(5);
-		AutonSelect(4);
 
 		//Safety and Analysing
 		ESTOP(0);
 		MotorD();
 			//StartTask(odomTask);
-
 		//Sequences
 		PickupBonusSequence();
 		PlaceBonusSequence();
-
 	};
 }
