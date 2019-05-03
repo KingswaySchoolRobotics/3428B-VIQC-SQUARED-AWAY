@@ -32,8 +32,6 @@
 
 
 /*	Motor Diagnostics */
-bool overTemp; // if any of the motors are overtemp set this value to true
-bool currentLimitFlag; // if any of the motors are using current above the default value set this value to true
 int PickupBonusSequenceState;
 int PlaceBonusSequenceState;
 
@@ -260,23 +258,6 @@ void PlaceBonusSequence () {
 	};
 };
 
-void EMERGENCYSTOP (float delay) { // if emergency stop buttons are pushed stop all motor and blink red on touch led
-	if ((getJoystickValue(BtnEDown)==1)&&(getJoystickValue(BtnFDown)==1)| (overTemp==true)|(currentLimitFlag==true)) {
-		sleep(delay);
-		repeatUntil(getTouchLEDValue(LED)==1 || (getJoystickValue(BtnEDown)==1) || (getJoystickValue(BtnFDown)==1)) {
-			setTouchLEDColor(LED,colorRed);
-			setTouchLEDBlinkTime(LED, 12.5, 7.5);
-			stopAllMotors();
-			playSound(soundCarAlarm2);
-		};
-		setTouchLEDColor(LED, colorNone);
-	};
-};
-
-void MotorDiagnostics() { // checks for motor overtemp or currentLimitFlag and plays an alarm if they are true
-	if ((overTemp==true)|(currentLimitFlag==true))
-		playSound(soundCarAlarm2);
-};
 
 void ArmReset() {
 	if (getBumperValue(ArmBottomBumper)==1) {
@@ -292,7 +273,6 @@ task main() { // main program code
 
 	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
 	resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
-	bool armPressed;
 	bool IndexArmPressed;
 	while(true) //while the program is running do this:
 	{
@@ -302,9 +282,6 @@ task main() { // main program code
 		displayVariableValues(1,ArmPresetValue); // displays the preset value for the height of the arm
 		displaySensorValues(2, Main_Gyro); // displays the gyro value in degrees
 		displayVariableValues(3, PickupBonusSequenceState);
-		//System Functions
-		MotorDiagnostics(); // see MotorDiagnostics
-		EMERGENCYSTOP(100); // see EMERGENCYSTOP
 		//Sequences
 		PickupBonusSequence();
 		PlaceBonusSequence();
@@ -335,6 +312,21 @@ task main() { // main program code
 			};
 		}
 
+		if (!getJoystickValue(BtnEDown)) {
+			setMotorSpeed(Intake, 100);
+			} else {
+			setMotorSpeed(Intake, -100);
+		};
+
+		//Claw Code
+		if (getJoystickValue(BtnRUp)) {
+			setMotorSpeed(CubeClaw, 100);
+			} else if (getJoystickValue(BtnRDown)) {
+			setMotorSpeed(CubeClaw, -100);
+			} else {
+			setMotorSpeed(CubeClaw, 0);
+		};
+
 		//DriveCode
 		if (PickupBonusSequenceState ==1 && PlaceBonusSequenceState == 1) {
 			if(abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {	//if the absoloute value of ChA is above 20 or the absoloute value of ChD is above 15 then allow the Motors to
@@ -343,27 +335,6 @@ task main() { // main program code
 			}
 			else { setMotorSpeed(Left, 0);	// if nothing is happening on the controller set the motor speed to 0
 				setMotorSpeed(Right, 0); // if nothing is happening on the controller set the motor speed to 0
-			};
-
-			if(getJoystickValue(BtnRUp)==1) //if the right up button is pushed move the arm up
-			{
-				setMotorSpeed(ArmLeft, -75);	//move the left arm motor up
-				setMotorSpeed(ArmRight, -75); //move the right arm motor up
-				armPressed = true;
-			}
-			else
-			{
-				if(getJoystickValue(BtnRDown)==1) //if the right down button is pushed move the arm down
-				{
-					setMotorSpeed(ArmLeft, 75);	 //move the left arm motor down
-					setMotorSpeed(ArmRight, 75); //move the right arm motor down
-					armPressed = true;
-				}
-			}
-			if (getJoystickValue(BtnRDown)==0 && getJoystickValue(BtnRUp)==0 && armPressed==true) {
-				setMotorSpeed(ArmLeft,0);
-				setMotorSpeed(ArmRight,0);
-				armPressed = false;
 			};
 		};
 	};
