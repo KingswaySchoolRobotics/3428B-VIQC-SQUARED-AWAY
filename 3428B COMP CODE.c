@@ -3,6 +3,7 @@
 #pragma config(Sensor, port4,  LED,            sensorVexIQ_LED)
 #pragma config(Sensor, port7,  CenterColor,    sensorVexIQ_ColorGrayscale)
 #pragma config(Sensor, port8,  CrossColor,     sensorVexIQ_ColorGrayscale)
+#pragma config(Sensor, port12, BallDetect,     sensorVexIQ_Touch)
 #pragma config(Motor,  motor1,          Left,          tmotorVexIQ, PIDControl, encoder)
 #pragma config(Motor,  motor5,          Intake,        tmotorVexIQ, PIDControl, encoder)
 #pragma config(Motor,  motor6,          Right,         tmotorVexIQ, PIDControl, reversed, encoder)
@@ -13,9 +14,9 @@
 
 //E:/VIQC/NextLevelDrive.c
 /*************************************PROGRAMMER NOTES*****************************************************//*
-/*1*//* adjust position with tom and ben to use the double pusher Locking Mechanisim and presets /*DONE*/
-/*2*//*arm motors bottom button reset /**DONE**/
-/*3*//*remove touch led and ultrasonic with 2 motors at Front for latching once i get approval from the rest of the team /*DONE*/
+/*1*//*
+/*2*//*
+/*3*//*
 /*4*//*
 /*5*//*
 /*6*//*
@@ -30,8 +31,6 @@
 /*15*//*
 *//*End of Notes Main Program Code is Below */
 
-
-/*	Motor Diagnostics */
 int PickupBonusSequenceState;
 int PlaceBonusSequenceState;
 
@@ -43,7 +42,6 @@ float Height4 = -500; //Bonus Hub Position
 float Height5 = -680; //Bonus Hub PickUp
 int ArmPresetValue = 0; // the preset number that tells the preset code how high to move the arm
 
-
 void driveDistance(float distance) {
 	float MoveDistanceRotations=distance/200*360;
 	moveMotorTarget(Left, MoveDistanceRotations, 100);
@@ -51,7 +49,6 @@ void driveDistance(float distance) {
 };
 
 bool TurnDegrees (float varTurnDegrees) {
-
 	static bool InProgressTask;
 	if (!InProgressTask) {
 		resetGyro(Main_Gyro);
@@ -80,42 +77,36 @@ void ArmHeightMove() {
 		setMotorTarget(ArmLeft, Height0, 100);
 		setMotorTarget(ArmRight, Height0, 100);
 		setTouchLEDColor(LED,colorOrange);
-		setTouchLEDColor(LED,colorNone);
 		break;
 
 	case 1://Place HighScored Hub and Move MultiPusher Over Field Lines
 		setMotorTarget(ArmLeft, Height1, 100);
 		setMotorTarget(ArmRight, Height1, 100);
 		setTouchLEDColor(LED,colorOrange);
-		setTouchLEDColor(LED,colorNone);
 		break;
 
 	case 2://Position HighScored Hub
 		setMotorTarget(ArmLeft, Height2, 100);
 		setMotorTarget(ArmRight, Height2, 100);
 		setTouchLEDColor(LED,colorOrange);
-		setTouchLEDColor(LED,colorNone);
 		break;
 
 	case 3://Static Height / Moving height for balance
 		setMotorTarget(ArmLeft, Height3, 100);
 		setMotorTarget(ArmRight, Height3, 100);
 		setTouchLEDColor(LED,colorOrange);
-		setTouchLEDColor(LED,colorNone);
 		break;
 
 	case 4://Bonus Hub Align Position
 		setMotorTarget(ArmLeft, Height4, 100);
 		setMotorTarget(ArmRight, Height4, 100);
 		setTouchLEDColor(LED,colorOrange);
-		setTouchLEDColor(LED,colorNone);
 		break;
 
 	case 5://Bonus Hub Pickup Position
 		setMotorTarget(ArmLeft, Height5, 100);
 		setMotorTarget(ArmRight, Height5, 100);
 		setTouchLEDColor(LED,colorOrange);
-		setTouchLEDColor(LED,colorNone);
 		break;
 
 	};
@@ -258,30 +249,30 @@ void PlaceBonusSequence () {
 	};
 };
 
-
 void ArmReset() {
 	if (getBumperValue(ArmBottomBumper)==1) {
 		resetMotorEncoder(ArmLeft);
 		resetMotorEncoder(ArmRight);
 		setTouchLEDColor(LED,colorBlue);
 		setTouchLEDColor(LED,colorNone);
-
 	}
 }
 
 task main() { // main program code
-
 	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
 	resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
 	bool IndexArmPressed;
 	while(true) //while the program is running do this:
 	{
+		setTouchLEDColor(LED,colorNone);
 		ArmReset();
 		//Display Code
-		displayTextLine(0, "Arm=%d", ((getMotorEncoder(ArmLeft)) + (getMotorEncoder(ArmRight)))/2); //Displays Average of motor encoders position
+		displayTextLine(0, "Arm Height=%d", ((getMotorEncoder(ArmLeft)) + (getMotorEncoder(ArmRight)))/2); //Displays Average of motor encoders position
 		displayVariableValues(1,ArmPresetValue); // displays the preset value for the height of the arm
-		displaySensorValues(2, Main_Gyro); // displays the gyro value in degrees
+		displayTextLine(2, "Gyro=%d", getGyroDegrees(Main_Gyro)); // displays the gyro value in degrees
 		displayVariableValues(3, PickupBonusSequenceState);
+		displayVariableValues(4, PlaceBonusSequenceState);
+		displayVariableValues(5, Height0);
 		//Sequences
 		PickupBonusSequence();
 		PlaceBonusSequence();
