@@ -34,6 +34,8 @@
 int PickupBonusSequenceState;
 int PlaceBonusSequenceState;
 
+bool intakeStarted;
+
 float Height0 = 0; //Floor
 float Height1 = -100; //Place HighScored Hub and Move MultiPusher Over Field Lines
 float Height2 = -200; //Position HighScored Hub
@@ -262,6 +264,7 @@ task main() { // main program code
 	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
 	resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
 	bool IndexArmPressed;
+	intakeStarted = false;
 	while(true) //while the program is running do this:
 	{
 		setTouchLEDColor(LED,colorNone);
@@ -303,9 +306,14 @@ task main() { // main program code
 			};
 		}
 
-		if (!getJoystickValue(BtnEDown)) {
+		// Intake Code
+		if (!intakeStarted) {
+			waitUntil(getJoystickValue(BtnEDown));
+		intakeStarted = true;
+	}
+		else if (!getJoystickValue(BtnEDown)) {
 			setMotorSpeed(Intake, 100);
-			} else {
+			} else if(getJoystickValue(BtnEDown)){
 			setMotorSpeed(Intake, -100);
 		};
 
