@@ -5,7 +5,7 @@
 #pragma config(Sensor, port8,  CrossColor,     sensorVexIQ_ColorGrayscale)
 #pragma config(Sensor, port12, BallDetect,     sensorVexIQ_Touch)
 #pragma config(Motor,  motor1,          Left,          tmotorVexIQ, PIDControl, encoder)
-#pragma config(Motor,  motor5,          Intake,        tmotorVexIQ, PIDControl, encoder)
+#pragma config(Motor,  motor5,          Intake,        tmotorVexIQ, PIDControl, reversed, encoder)
 #pragma config(Motor,  motor6,          Right,         tmotorVexIQ, PIDControl, reversed, encoder)
 #pragma config(Motor,  motor9,          CubeClaw,      tmotorVexIQ, PIDControl, encoder)
 #pragma config(Motor,  motor10,         ArmRight,      tmotorVexIQ, PIDControl, reversed, encoder)
