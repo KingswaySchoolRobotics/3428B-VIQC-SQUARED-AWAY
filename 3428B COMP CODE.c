@@ -265,7 +265,8 @@ task main() { // main program code
 	resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
 	bool IndexArmPressed; // defines the variable that check whether the controller lift buttons have been pressed during a sequence
 	intakeStarted = false; // sets the variable that starts the intake to false
-	while(true) //while the program is running do this:
+	resetTimer(timer2);
+	while(/*timer2 < 90*/true) //while the program is running do this:
 	{
 		setTouchLEDColor(LED,colorNone);
 		ArmReset();
@@ -310,6 +311,7 @@ task main() { // main program code
 		if (!intakeStarted) {
 			waitUntil(getJoystickValue(BtnEDown));
 		intakeStarted = true;
+		resetTimer(timer2);
 	}
 		else if (!getJoystickValue(BtnEDown)) {
 			setMotorSpeed(Intake, 100);
@@ -337,6 +339,8 @@ task main() { // main program code
 			};
 		};
 	};
+	/*while (true) { // if competition ended set led to red
+		setTouchLEDColor(LED,colorRed);};*/
 }
 
 //END
