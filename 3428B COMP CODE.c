@@ -31,10 +31,10 @@
 /*15*//*
 *//*End of Notes Main Program Code is Below */
 
-int PickupBonusSequenceState;
-int PlaceBonusSequenceState;
+int PickupBonusSequenceState; // defines the variable that is used to tell what state the Pickup Bonus Sequence is in
+int PlaceBonusSequenceState; // defines the variable that is used to tell what state the Place Bonus Sequence is in
 
-bool intakeStarted;
+bool intakeStarted; // defines the variable that waits until the intake button is pressed before starting Intake
 
 float Height0 = 0; //Floor
 float Height1 = -100; //Place HighScored Hub and Move MultiPusher Over Field Lines
@@ -44,36 +44,36 @@ float Height4 = -500; //Bonus Hub Position
 float Height5 = -680; //Bonus Hub PickUp
 int ArmPresetValue = 0; // the preset number that tells the preset code how high to move the arm
 
-void driveDistance(float distance) {
-	float MoveDistanceRotations=distance/200*360;
-	moveMotorTarget(Left, MoveDistanceRotations, 100);
+void driveDistance(float distance) { // function that converts mm into rotations / degrees so the robot can then use the built in PIDcontroller to turn that ammount
+	float MoveDistanceRotations=distance/200*360; //divides the input mm by 100 then times it by 360 to get the rotations / degrees
+	moveMotorTarget(Left, MoveDistanceRotations, 100); // moves the motors according to the output variable from 'MoveDistanceRotations'
 	moveMotorTarget(Right, MoveDistanceRotations, 100);
 };
 
-bool TurnDegrees (float varTurnDegrees) {
-	static bool InProgressTask;
-	if (!InProgressTask) {
-		resetGyro(Main_Gyro);
-		if (varTurnDegrees>0) {
-			setMotorSpeed(Left, 50);
+bool TurnDegrees (float varTurnDegrees) { // turn PID function that returns true or false once finished
+	static bool InProgressTask; // defines the static bool that keeps the function looping until it has completed the turn
+	if (!InProgressTask) { // starts code while it hasn't completed the turn
+		resetGyro(Main_Gyro); // resets the gyro
+		if (varTurnDegrees>0) { // checks whether the setpoint (where we want to be) is greater than 0 so we turn right or if its less than 0 it turns Left
+			setMotorSpeed(Left, 50); // turns Right
 			setMotorSpeed(Right, -50);
 			} else {
-			setMotorSpeed(Left, -50);
+			setMotorSpeed(Left, -50); // turns Left
 			setMotorSpeed(Right, 50);
 		};
 	};
-	InProgressTask = true;
-	if ((getGyroDegreesFloat(Main_Gyro)>varTurnDegrees && varTurnDegrees>0) || (getGyroDegreesFloat(Main_Gyro)<varTurnDegrees && varTurnDegrees<0)) {
-		InProgressTask = false;
-		setMotorSpeed(Left, 0);
+	InProgressTask = true; // stops the above code
+	if ((getGyroDegreesFloat(Main_Gyro)>varTurnDegrees && varTurnDegrees>0) || (getGyroDegreesFloat(Main_Gyro)<varTurnDegrees && varTurnDegrees<0)) { // if the robot has turned to the setpoint then stop the Motors
+		InProgressTask = false; // starts above code again if it has overshot
+		setMotorSpeed(Left, 0); // stops both motors
 		setMotorSpeed(Right, 0);
-		return true;
+		return true; // returns true if it has finished so that the sequence can move to the next command
 
 	};
-	return false;
+	return false; // returns false if it has not finished so that the sequence waits until it is finished
 };
 
-void ArmHeightMove() {
+void ArmHeightMove() { //moves the arm to the defined positions (height 0, Height1, Height2, etc) based on the variable ArmPresetValue
 	switch(ArmPresetValue) {  //moves the arm by reading the variable (ArmPresetValue)
 	case 0://Floor
 		setMotorTarget(ArmLeft, Height0, 100);
@@ -81,13 +81,13 @@ void ArmHeightMove() {
 		setTouchLEDColor(LED,colorOrange);
 		break;
 
-	case 1://Place HighScored Hub and Move MultiPusher Over Field Lines
+	case 1://
 		setMotorTarget(ArmLeft, Height1, 100);
 		setMotorTarget(ArmRight, Height1, 100);
 		setTouchLEDColor(LED,colorOrange);
 		break;
 
-	case 2://Position HighScored Hub
+	case 2://
 		setMotorTarget(ArmLeft, Height2, 100);
 		setMotorTarget(ArmRight, Height2, 100);
 		setTouchLEDColor(LED,colorOrange);
@@ -99,13 +99,13 @@ void ArmHeightMove() {
 		setTouchLEDColor(LED,colorOrange);
 		break;
 
-	case 4://Bonus Hub Align Position
+	case 4://
 		setMotorTarget(ArmLeft, Height4, 100);
 		setMotorTarget(ArmRight, Height4, 100);
 		setTouchLEDColor(LED,colorOrange);
 		break;
 
-	case 5://Bonus Hub Pickup Position
+	case 5://
 		setMotorTarget(ArmLeft, Height5, 100);
 		setMotorTarget(ArmRight, Height5, 100);
 		setTouchLEDColor(LED,colorOrange);
@@ -251,7 +251,7 @@ void PlaceBonusSequence () {
 	};
 };
 
-void ArmReset() {
+void ArmReset() { // resets the arm if the bottom bumper is pressed
 	if (getBumperValue(ArmBottomBumper)==1) {
 		resetMotorEncoder(ArmLeft);
 		resetMotorEncoder(ArmRight);
@@ -263,8 +263,8 @@ void ArmReset() {
 task main() { // main program code
 	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
 	resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
-	bool IndexArmPressed;
-	intakeStarted = false;
+	bool IndexArmPressed; // defines the variable that check whether the controller lift buttons have been pressed during a sequence
+	intakeStarted = false; // sets the variable that starts the intake to false
 	while(true) //while the program is running do this:
 	{
 		setTouchLEDColor(LED,colorNone);
