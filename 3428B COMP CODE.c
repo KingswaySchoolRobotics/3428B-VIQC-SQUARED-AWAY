@@ -15,8 +15,8 @@
 //VIQC_SquaredAway_CompCode
 /*************************************PROGRAMMER NOTES*****************************************************//*
 /*1*//* get odometry working
-/*2*//*
-/*3*//*
+/*2*//* add special stuff
+/*3*//* fix sequences
 /*4*//*
 /*5*//*
 /*6*//*
@@ -112,6 +112,17 @@ void ArmHeightMove() { //moves the arm to the defined positions (height 0, Heigh
 		break;
 
 	};
+};
+
+void GyroCustomCalibration(int count = 30) {
+	startGyroCalibration( Main_Gyro, gyroCalibrateSamples512 );
+	// delay so calibrate flag can be set internally to the gyro
+	wait1Msec(100);
+
+	// wait for calibration to finish or 2 seconds, whichever is longer
+	while( getGyroCalibrationFlag(Main_Gyro) || (count-- > 0) ) {
+		wait1Msec(100);
+	} resetGyro(Main_Gyro);
 };
 
 void PickupBonusSequence () {
@@ -266,6 +277,7 @@ task main() { // main program code
 	bool IndexArmPressed; // defines the variable that check whether the controller lift buttons have been pressed during a sequence
 	intakeStarted = false; // sets the variable that starts the intake to false
 	resetTimer(timer2);
+	GyroCustomCalibration(30);
 	while(/*timer2 < 90*/true) //while the program is running do this:
 	{
 		setTouchLEDColor(LED,colorNone);
