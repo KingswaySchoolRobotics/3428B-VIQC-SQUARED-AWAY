@@ -271,6 +271,40 @@ void ArmReset() { // resets the arm if the bottom bumper is pressed
 	}
 }
 
+float xaxisPos = 0;
+float yaxisPos = 0;
+float robotAngle = 0;
+float robotPosition = 0;
+float dL = 0;
+float dR = 0;
+
+//int ticksPerRev = 360;
+//float diameter = 2.5;
+float radius = 1.25;
+//float calibration = 3.14159265429*diameter/ticksPerRev; //C our calibration factor 2:11 video
+//float avcR = 0.218166156547917;
+//float avcL = 0.218166156547917;
+float distanceBetweenWheels = 7.25; // B (base line distance)
+
+task odometry () { // odometry task
+	while(true)
+	{
+		setMotorEncoderUnits(encoderCounts);
+		dR = /*calibration * */ getMotorEncoder(Right);
+		dL = /*calibration * */ getMotorEncoder(Left);
+		robotPosition = (dR+dL) / 2;
+		robotAngle = (dL-dR) / distanceBetweenWheels * (180/3.14159265429);
+		xaxisPos = radius/2 * (dR + dL) * sin(robotAngle);
+		yaxisPos = radius/2 * (dR + dL) * cos(robotAngle);
+
+		displayVariableValues(line1,xaxisPos);
+		displayVariableValues(line2,yaxisPos);
+		displayVariableValues(line3,robotPosition);
+		displayVariableValues(line4, robotAngle);
+		displayVariableValues(line5, getGyroDegreesFloat(Main_Gyro));
+	};
+};
+
 task main() { // main program code
 	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
 	resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
@@ -278,6 +312,8 @@ task main() { // main program code
 	intakeStarted = false; // sets the variable that starts the intake to false
 	resetTimer(timer2);
 	GyroCustomCalibration(30);
+	delay(10);
+	startTask(odometry);
 	while(/*timer2 < 90*/true) //while the program is running do this:
 	{
 		setTouchLEDColor(LED,colorNone);
@@ -322,9 +358,9 @@ task main() { // main program code
 		// Intake Code
 		if (!intakeStarted) {
 			waitUntil(getJoystickValue(BtnEDown));
-		intakeStarted = true;
-		resetTimer(timer2);
-	}
+			intakeStarted = true;
+			resetTimer(timer2);
+		}
 		else if (!getJoystickValue(BtnEDown)) {
 			setMotorSpeed(Intake, 100);
 			} else if(getJoystickValue(BtnEDown)){
@@ -352,7 +388,7 @@ task main() { // main program code
 		};
 	};
 	/*while (true) { // if competition ended set led to red
-		setTouchLEDColor(LED,colorRed);};*/
+	setTouchLEDColor(LED,colorRed);};*/
 }
 
 //END
