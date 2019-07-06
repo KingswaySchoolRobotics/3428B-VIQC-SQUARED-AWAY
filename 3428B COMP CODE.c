@@ -118,6 +118,10 @@ void GyroCustomCalibration(int count = 30) {
 	} resetGyro(Main_Gyro);
 };
 
+//////////////////////////////////////////////////////
+//							 Place cube Sequence								//
+//////////////////////////////////////////////////////
+
 void PickupBonusSequence () {
 	static int LastState;
 	bool P1;
@@ -139,10 +143,11 @@ void PickupBonusSequence () {
 
 	case 2:
 		if (P1) {
-			ArmPresetValue=4;
+			ArmPresetValue=3;
 			ArmHeightMove();
+			delay(1000);
 			driveDistance(600);
-			delay(100);
+			delay(500);
 		};
 		if (getMotorZeroVelocity(Left)) {
 			PickupBonusSequenceState = 3;
@@ -151,9 +156,11 @@ void PickupBonusSequence () {
 
 	case 3:
 		if (P1) {
+			driveDistance(-100);
+			delay(200);
 			ArmPresetValue=2;
 			ArmHeightMove();
-			delay(100);
+			delay(750);
 		};
 		if (getMotorZeroVelocity(ArmLeft) || (getTimerValue(T1)>3000)) {
 			PickupBonusSequenceState = 4;
@@ -163,6 +170,7 @@ void PickupBonusSequence () {
 	case 4:
 		if (P1) {
 			driveDistance(-600);
+			delay(100);
 			ArmPresetValue=0;
 			delay(100);
 		};
@@ -170,16 +178,16 @@ void PickupBonusSequence () {
 			ArmHeightMove();
 		};
 		if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>3000)) {
-			PickupBonusSequenceState = 5;
+			PickupBonusSequenceState = 1;
 		};
 		break;
 
-	case 5:
+/*	case 5:
 		if (TurnDegrees(90.0)) {
 			PickupBonusSequenceState =1;
 		};
 		break;
-
+*/
 	default: PickupBonusSequenceState = 1;
 	};
 };
@@ -255,6 +263,12 @@ void PlaceBonusSequence () {
 	};
 };
 
+void GrayscaleDetector () {
+	if (getColorGrayscale(CenterColor)<15) {
+	setTouchLEDColor(LED,colorRed);
+}
+
+};
 void ArmReset() { // resets the arm if the bottom bumper is pressed
 	if (getBumperValue(ArmBottomBumper)==1) {
 		resetMotorEncoder(ArmLeft);
@@ -311,6 +325,7 @@ task main() { // main program code
 	{
 		setTouchLEDColor(LED,colorNone);
 		ArmReset();
+		GrayscaleDetector();
 		//Display Code
 		displayTextLine(0, "Arm Height=%d", ((getMotorEncoder(ArmLeft)) + (getMotorEncoder(ArmRight)))/2); //Displays Average of motor encoders position
 		displayVariableValues(1,ArmPresetValue); // displays the preset value for the height of the arm
