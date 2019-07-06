@@ -31,6 +31,7 @@
 /*15*//*
 *//*End of Notes Main Program Code is Below */
 
+int gyrodriftrate = 37;
 int PickupBonusSequenceState; // defines the variable that is used to tell what state the Pickup Bonus Sequence is in
 int PlaceBonusSequenceState; // defines the variable that is used to tell what state the Place Bonus Sequence is in
 
