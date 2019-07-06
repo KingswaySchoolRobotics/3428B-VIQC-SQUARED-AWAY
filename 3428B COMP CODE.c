@@ -41,7 +41,6 @@ float Height1 = -300; //Place HighScored Hub and Move MultiPusher Over Field Lin
 float Height2 = -700; //Position HighScored Hub
 float Height3 = -1100; //Static Height / Moving height for balance
 float Height4 = -1500; //Bonus Hub Position
-float Height5 = -1900; //Bonus Hub PickUp
 int ArmPresetValue = 0; // the preset number that tells the preset code how high to move the arm
 
 void driveDistance(float distance) { // function that converts mm into rotations / degrees so the robot can then use the built in PIDcontroller to turn that ammount
@@ -105,12 +104,6 @@ void ArmHeightMove() { //moves the arm to the defined positions (height 0, Heigh
 		setTouchLEDColor(LED,colorOrange);
 		break;
 
-	case 5://
-		setMotorTarget(ArmLeft, Height5, 100);
-		setMotorTarget(ArmRight, Height5, 100);
-		setTouchLEDColor(LED,colorOrange);
-		break;
-
 	};
 };
 
@@ -146,9 +139,9 @@ void PickupBonusSequence () {
 
 	case 2:
 		if (P1) {
-			driveDistance(600);
 			ArmPresetValue=4;
 			ArmHeightMove();
+			driveDistance(600);
 			delay(100);
 		};
 		if (getMotorZeroVelocity(Left)) {
@@ -158,7 +151,7 @@ void PickupBonusSequence () {
 
 	case 3:
 		if (P1) {
-			ArmPresetValue=5;
+			ArmPresetValue=2;
 			ArmHeightMove();
 			delay(100);
 		};
@@ -170,7 +163,7 @@ void PickupBonusSequence () {
 	case 4:
 		if (P1) {
 			driveDistance(-600);
-			ArmPresetValue=3;
+			ArmPresetValue=0;
 			delay(100);
 		};
 		if(getTimerValue(T1)>1500) {
@@ -346,12 +339,13 @@ task main() { // main program code
 		if (getJoystickValue(BtnLDown)==0 && getJoystickValue(BtnLUp)==0) {
 			IndexArmPressed=false;
 		};
+
 		if (0>ArmPresetValue){
 			ArmPresetValue = 0;
 		}
 		else {
 			if (4<ArmPresetValue) {
-				ArmPresetValue = 5;
+				ArmPresetValue = 4;
 			};
 		}
 
