@@ -145,7 +145,7 @@ void PickupBonusSequence () {
 		if (P1) {
 			ArmPresetValue=3;
 			ArmHeightMove();
-			delay(1000);
+			delay(800);
 			driveDistance(600);
 			delay(500);
 		};
@@ -157,10 +157,11 @@ void PickupBonusSequence () {
 	case 3:
 		if (P1) {
 			driveDistance(-100);
-			delay(200);
+			delay(400);
 			ArmPresetValue=2;
 			ArmHeightMove();
-			delay(750);
+			delay(800);
+
 		};
 		if (getMotorZeroVelocity(ArmLeft) || (getTimerValue(T1)>3000)) {
 			PickupBonusSequenceState = 4;
@@ -170,8 +171,9 @@ void PickupBonusSequence () {
 	case 4:
 		if (P1) {
 			driveDistance(-600);
-			delay(100);
+			delay(800);
 			ArmPresetValue=0;
+			ArmHeightMove();
 			delay(100);
 		};
 		if(getTimerValue(T1)>1500) {
@@ -182,15 +184,19 @@ void PickupBonusSequence () {
 		};
 		break;
 
-/*	case 5:
+		/*	case 5:
 		if (TurnDegrees(90.0)) {
-			PickupBonusSequenceState =1;
+		PickupBonusSequenceState =1;
 		};
 		break;
-*/
+		*/
 	default: PickupBonusSequenceState = 1;
 	};
 };
+
+//////////////////////////////////////////////////////
+//							 Pickup cube Sequence								//
+//////////////////////////////////////////////////////
 
 void PlaceBonusSequence () {
 	static int LastState;
@@ -213,19 +219,16 @@ void PlaceBonusSequence () {
 
 	case 2:
 		if (P1) {
-			driveDistance(500);
-			ArmPresetValue=3;
-			ArmHeightMove();
+			if (TurnDegrees(35.0)) {
+				PickupBonusSequenceState = 3;
+			};
 			delay(100);
-		};
-		if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>3000)) {
-			PlaceBonusSequenceState = 3;
 		};
 		break;
 
 	case 3:
 		if (P1) {
-			driveDistance(-70);
+			driveDistance(70);
 			delay(100);
 		};
 		if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>1500)) {
@@ -234,30 +237,34 @@ void PlaceBonusSequence () {
 		break;
 
 	case 4:
-		if (P1) {
-			ArmPresetValue=1;
-			ArmHeightMove();
-		};
-		if (getMotorZeroVelocity(ArmLeft) || (getTimerValue(T1)>500)) {
-			PlaceBonusSequenceState = 5;
-		};
+			if (TurnDegrees(-70.0)) {
+				PickupBonusSequenceState = 5;
+			};
 		break;
 
 	case 5:
 		if (P1) {
+			ArmPresetValue = 3;
 			delay(500);
-			driveDistance(-380);
+			driveDistance(-40);
 			delay(100);
 
 		};
 		if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>1500)) {
-			PlaceBonusSequenceState = 1;
+			PlaceBonusSequenceState = 6;
 		};
-		if(getTimerValue(T1)>1500) {
-			ArmPresetValue = 0;
-			ArmHeightMove();
-		};
+		/*		if(getTimerValue(T1)>1500) {
+		ArmPresetValue = 0;
+		ArmHeightMove();
+		}; 														*/
 		break;
+
+	case 6:
+			if (TurnDegrees(35.0)) {
+				PickupBonusSequenceState = 1;
+			};
+		break;
+
 
 	default: PlaceBonusSequenceState = 1;
 	};
@@ -265,8 +272,8 @@ void PlaceBonusSequence () {
 
 void GrayscaleDetector () {
 	if (getColorGrayscale(CenterColor)<15) {
-	setTouchLEDColor(LED,colorRed);
-}
+		setTouchLEDColor(LED,colorRed);
+	}
 
 };
 void ArmReset() { // resets the arm if the bottom bumper is pressed
