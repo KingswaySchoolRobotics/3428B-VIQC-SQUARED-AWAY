@@ -30,8 +30,10 @@
 /*14*//*
 /*15*//*
 *//*End of Notes Main Program Code is Below */
+long gyroValue;
+long gyroError;
 
-int gyrodriftrate = 37;
+//int gyrodriftrate = 37;
 int PickupBonusSequenceState; // defines the variable that is used to tell what state the Pickup Bonus Sequence is in
 int PlaceBonusSequenceState; // defines the variable that is used to tell what state the Place Bonus Sequence is in
 
@@ -63,7 +65,7 @@ bool TurnDegrees (float varTurnDegrees) { // turn PID function that returns true
 		};
 	};
 	InProgressTask = true; // stops the above code
-	if ((getGyroDegreesFloat(Main_Gyro)>varTurnDegrees && varTurnDegrees>0) || (getGyroDegreesFloat(Main_Gyro)<varTurnDegrees && varTurnDegrees<0)) { // if the robot has turned to the setpoint then stop the Motors
+	if ((gyroValue>varTurnDegrees && varTurnDegrees>0) || (gyroValue<varTurnDegrees && varTurnDegrees<0)) { // if the robot has turned to the setpoint then stop the Motors
 		InProgressTask = false; // starts above code again if it has overshot
 		setMotorSpeed(Left, 0); // stops both motors
 		setMotorSpeed(Right, 0);
@@ -312,13 +314,57 @@ task odometry () { // odometry task
 		xaxisPos = radius/2 * (dR + dL) * sin(robotAngle);
 		yaxisPos = radius/2 * (dR + dL) * cos(robotAngle);
 
-		displayVariableValues(line1,xaxisPos);
-		displayVariableValues(line2,yaxisPos);
-		displayVariableValues(line3,robotPosition);
-		displayVariableValues(line4, robotAngle);
-		displayVariableValues(line5, getGyroDegreesFloat(Main_Gyro));
+		//displayVariableValues(line1,xaxisPos);
+		//displayVariableValues(line2,yaxisPos);
+		//displayVariableValues(line3,robotPosition);
+		//displayVariableValues(line4, robotAngle);
+	//	displayVariableValues(line5, getGyroDegreesFloat(Main_Gyro));
 	};
 };
+/*
+int SpeedLeft = 0;
+int SpeedRight = 0;
+int Heading = 0;
+int HeadingStraight;
+*/
+
+
+
+task gyroTask()
+{
+ long rate;
+ long angle, lastAngle;
+ lastAngle = 0;
+ gyroError=0;
+ // Change sensitivity, this allows the rate reading to be higher
+ setGyroSensitivity(Main_Gyro, gyroNormalSensitivity);
+ //Reset the gyro sensor to remove any previous data.
+ resetGyro(Main_Gyro);
+ wait1Msec(1000);
+ repeat (forever) {
+  rate = getGyroRate(Main_Gyro);
+  angle = getGyroDegrees(Main_Gyro);
+  // If big rate then ignore gyro changes
+  if( abs( rate ) < 2 )
+  {
+   if( angle != lastAngle )
+    gyroError += lastAngle - angle;
+  }
+  lastAngle = angle;
+  gyroValue = angle + gyroError;
+  wait1Msec(10);
+ }
+}
+/*
+task keepStraight(){
+ while(true) {
+  HeadingStraight=0;
+  if(gyroValue<-2){HeadingStraight=-6;}
+  if(gyroValue>2){HeadingStraight=6;}
+  wait1Msec(100);
+  setMotorSpeed(Left, SpeedLeft-HeadingStraight);
+  setMotorSpeed(Right,SpeedRight +HeadingStraight);
+}}*/
 
 task main() { // main program code
 	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
@@ -329,6 +375,7 @@ task main() { // main program code
 	GyroCustomCalibration(30);
 	delay(10);
 	startTask(odometry);
+	startTask(gyroTask);
 	while(/*timer2 < 90*/true) //while the program is running do this:
 	{
 		setTouchLEDColor(LED,colorNone);
