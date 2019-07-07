@@ -32,7 +32,7 @@
 *//*End of Notes Main Program Code is Below */
 long gyroValue;
 long gyroError;
-
+int CorrectionRatioforDrivingSequences = 600/225;
 //int gyrodriftrate = 37;
 int PickupBonusSequenceState; // defines the variable that is used to tell what state the Pickup Bonus Sequence is in
 int PlaceBonusSequenceState; // defines the variable that is used to tell what state the Place Bonus Sequence is in
@@ -47,9 +47,8 @@ float Height4 = -1500; //Bonus Hub Position
 int ArmPresetValue = 0; // the preset number that tells the preset code how high to move the arm
 
 void driveDistance(float distance) { // function that converts mm into rotations / degrees so the robot can then use the built in PIDcontroller to turn that ammount
-	float MoveDistanceRotations=distance/200*360; //divides the input mm by 100 then times it by 360 to get the rotations / degrees
-	moveMotorTarget(Left, MoveDistanceRotations, 100); // moves the motors according to the output variable from 'MoveDistanceRotations'
-	moveMotorTarget(Right, MoveDistanceRotations, 100);
+	moveMotorTarget(Left, (distance/200*360*CorrectionRatioforDrivingSequences), 50); // moves the motors according to the output variable from 'MoveDistanceRotations'
+	moveMotorTarget(Right, (distance/200*360*CorrectionRatioforDrivingSequences), 50);
 };
 
 bool TurnDegrees (float varTurnDegrees) { // turn PID function that returns true or false once finished
@@ -65,7 +64,7 @@ bool TurnDegrees (float varTurnDegrees) { // turn PID function that returns true
 		};
 	};
 	InProgressTask = true; // stops the above code
-	if ((gyroValue>varTurnDegrees && varTurnDegrees>0) || (gyroValue<varTurnDegrees && varTurnDegrees<0)) { // if the robot has turned to the setpoint then stop the Motors
+	if ((getGyroDegrees(Main_Gyro)>varTurnDegrees && varTurnDegrees>0) || (getGyroDegrees(Main_Gyro)<varTurnDegrees && varTurnDegrees<0)) { // if the robot has turned to the setpoint then stop the Motors
 		InProgressTask = false; // starts above code again if it has overshot
 		setMotorSpeed(Left, 0); // stops both motors
 		setMotorSpeed(Right, 0);
@@ -150,6 +149,9 @@ void PickupBonusSequence () {
 			ArmHeightMove();
 			delay(800);
 			driveDistance(600);
+			//debugging for accuracy
+			//delay(10000);
+			//
 			delay(500);
 		};
 		if (getMotorZeroVelocity(Left)) {

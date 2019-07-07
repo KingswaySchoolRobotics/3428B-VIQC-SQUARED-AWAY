@@ -53,6 +53,24 @@ void driveDistance(float distance) { // function that converts mm into rotations
 	moveMotorTarget(Right, MoveDistanceRotations, 100);
 };
 
+bool AutonTurn (float varAutonDegrees) { // turn PID function that returns true or false once finished
+	resetGyro(Main_Gyro);
+	if (varAutonDegrees>0) { // checks whether the setpoint (where we want to be) is greater than 0 so we turn right or if its less than 0 it turns Left
+		setMotorSpeed(Left, 50); // turns Right
+		setMotorSpeed(Right, -50);
+		} else {
+		setMotorSpeed(Left, -50); // turns Left
+		setMotorSpeed(Right, 50);
+	};
+	if (getGyroDegrees(Main_Gyro)==varAutonDegrees) {
+		setMotorSpeed(Left, 0); // stops both motors
+		setMotorSpeed(Right, 0);
+		return true;
+		} else {
+		return false;
+	};
+};
+
 bool TurnDegrees (float varTurnDegrees) { // turn PID function that returns true or false once finished
 	static bool InProgressTask; // defines the static bool that keeps the function looping until it has completed the turn
 	if (!InProgressTask) { // starts code while it hasn't completed the turn
@@ -66,7 +84,7 @@ bool TurnDegrees (float varTurnDegrees) { // turn PID function that returns true
 		};
 	};
 	InProgressTask = true; // stops the above code
-	if ((gyroValue>varTurnDegrees && varTurnDegrees>0) || (gyroValue<varTurnDegrees && varTurnDegrees<0)) { // if the robot has turned to the setpoint then stop the Motors
+	if ((getGyroDegrees(Main_Gyro)>varTurnDegrees && varTurnDegrees>0) || (getGyroDegrees(Main_Gyro)<varTurnDegrees && varTurnDegrees<0)) { // if the robot has turned to the setpoint then stop the Motors
 		InProgressTask = false; // starts above code again if it has overshot
 		setMotorSpeed(Left, 0); // stops both motors
 		setMotorSpeed(Right, 0);
@@ -300,13 +318,13 @@ int HeadingStraight;
 
 
 task keepStraight(){
-	while(true) {
-		HeadingStraight=0;
-		if(gyroValue<-2){HeadingStraight=-6;}
-		if(gyroValue>2){HeadingStraight=6;}
-		wait1Msec(100);
-		setMotorSpeed(Left, SpeedLeft-HeadingStraight);
-		setMotorSpeed(Right,SpeedRight +HeadingStraight);
+while(true) {
+HeadingStraight=0;
+if(gyroValue<-2){HeadingStraight=-6;}
+if(gyroValue>2){HeadingStraight=6;}
+wait1Msec(100);
+setMotorSpeed(Left, SpeedLeft-HeadingStraight);
+setMotorSpeed(Right,SpeedRight +HeadingStraight);
 }}
 
 float AutonDriveMM;
@@ -314,12 +332,12 @@ float AutonDriveDEG;
 
 void DriveStraight(float AutonDriveMM) {
 float AutonDriveDEG = AutonDriveMM/200*360*360; //divides the input mm by 200 then times it by 360 to get the rotations / degrees
- SpeedLeft=75;
- SpeedRight=75;
- startTask(keepStraight);
- waitUntil (getMotorEncoder(Left)>AutonDriveDEG);//Forward 3.5 rotations
- stopTask(keepStraight);
- stopMultipleMotors(Left,Right);
+SpeedLeft=75;
+SpeedRight=75;
+startTask(keepStraight);
+waitUntil (getMotorEncoder(Left)>AutonDriveDEG);//Forward 3.5 rotations
+stopTask(keepStraight);
+stopMultipleMotors(Left,Right);
 };
 
 */
@@ -356,12 +374,15 @@ bool AutonStarted = false;
 task Auton() {
 	////////////////////////////////////////////////
 	//									Auton Code 								//
-  ////////////////////////////////////////////////
-
-driveDistance(800);
-while(TurnDegrees(90.0)){};
-
-
+	////////////////////////////////////////////////
+while(AutonStarted) {
+	driveDistance(100);
+	if (AutonTurn(90.0)) {
+		delay(100);
+	};
+	driveDistance(100);
+	AutonStarted = false;
+};
 }
 task main() { // main program code
 	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
@@ -374,7 +395,8 @@ task main() { // main program code
 	while(/*timer2 < 90*/true) //while the program is running do this:
 	{
 		if (getTouchLEDValue(LED)){
-		startTask(Auton);
+			startTask(Auton);
+			AutonStarted = true;
 		}
 		while (AutonStarted) {
 			setTouchLEDColor(LED,colorNone);
