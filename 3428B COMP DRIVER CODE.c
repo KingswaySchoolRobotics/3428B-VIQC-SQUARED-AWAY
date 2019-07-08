@@ -32,23 +32,24 @@
 *//*End of Notes Main Program Code is Below */
 long gyroValue;
 long gyroError;
-int CorrectionRatioforDrivingSequences = 600/225;
+//int CorrectionRatioforDrivingSequences = 600/225;
 //int gyrodriftrate = 37;
 int PickupBonusSequenceState; // defines the variable that is used to tell what state the Pickup Bonus Sequence is in
 int PlaceBonusSequenceState; // defines the variable that is used to tell what state the Place Bonus Sequence is in
 
 bool intakeStarted; // defines the variable that waits until the intake button is pressed before starting Intake
 
-float Height0 = 0; //Floor
-float Height1 = -300; //Place HighScored Hub and Move MultiPusher Over Field Lines
-float Height2 = -700; //Position HighScored Hub
-float Height3 = -1100; //Static Height / Moving height for balance
-float Height4 = -1500; //Bonus Hub Position
-int ArmPresetValue = 0; // the preset number that tells the preset code how high to move the arm
+float Height0 = 0; //Floor 2", 8/16
+float Height1 = -300; //Position for Cube Raise 5", 8/16
+float Height2 = -500; // 9", 15/16
+float Height3 = -700; //Ride Height 9", 15/16  //11" 8/16//
+float Height4 = -1000; //Place Cube on Low Score Platform 12" 14/16
+//float Height5 = -1000; //Height4 = 850;
+int ArmPresetValue = 0; //The preset number that tells the preset code how high to move the arm
 
 void driveDistance(float distance) { // function that converts mm into rotations / degrees so the robot can then use the built in PIDcontroller to turn that ammount
-	moveMotorTarget(Left, (distance/200*360*CorrectionRatioforDrivingSequences), 50); // moves the motors according to the output variable from 'MoveDistanceRotations'
-	moveMotorTarget(Right, (distance/200*360*CorrectionRatioforDrivingSequences), 50);
+	moveMotorTarget(Left, (distance/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), 50); // moves the motors according to the output variable from 'MoveDistanceRotations'
+	moveMotorTarget(Right, (distance/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), 50);
 };
 
 bool TurnDegrees (float varTurnDegrees) { // turn PID function that returns true or false once finished
