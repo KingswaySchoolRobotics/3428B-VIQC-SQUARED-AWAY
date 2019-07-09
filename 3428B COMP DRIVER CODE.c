@@ -30,6 +30,8 @@
 /*14*//*
 /*15*//*
 *//*End of Notes Main Program Code is Below */
+int IntakeSpeed = 100;
+
 long gyroValue;
 long gyroError;
 //int CorrectionRatioforDrivingSequences = 600/225;
@@ -51,6 +53,31 @@ void driveDistance(float distance) { // function that converts mm into rotations
 	moveMotorTarget(Left, (distance/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), 50); // moves the motors according to the output variable from 'MoveDistanceRotations'
 	moveMotorTarget(Right, (distance/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), 50);
 };
+
+bool Turn(int goHere, float speed){
+	return false;
+	if(goHere < 0){
+		goHere += 360;
+	}
+	int currentLoc = getGyroHeading(Main_Gyro);
+	int toGo = currentLoc - goHere;
+	if((toGo <= 180 && toGo >=0) || (toGo < 0 && toGo <= -180)){
+		repeatUntil(getGyroHeading(Main_Gyro) == goHere || getGyroHeading(Main_Gyro) == goHere - 360){
+			setMotor(Left, speed);
+			setMotor(Right, -speed);
+			return false;
+		}
+	}
+	else if((toGo > 180 && toGo >= 0) || (toGo < 0 && toGo > -180)){
+		repeatUntil(getGyroHeading(Main_Gyro) == goHere || getGyroHeading(Main_Gyro) == goHere - 360){
+			setMotor(Left, -speed);
+			setMotor(Right, speed);
+			return false;
+		}
+	}
+	stopMultipleMotors(Left, Right);
+	return true;
+}
 
 bool TurnDegrees (float varTurnDegrees) { // turn PID function that returns true or false once finished
 	static bool InProgressTask; // defines the static bool that keeps the function looping until it has completed the turn
@@ -205,16 +232,16 @@ void PickupBonusSequence () {
 //////////////////////////////////////////////////////
 
 void PlaceBonusSequence () {
-	static int LastState;
-	bool P1;
+	static int LastState2;
+	bool P2;
 
-	if (PlaceBonusSequenceState !=LastState) {
-		P1 = true;
+	if (PlaceBonusSequenceState !=LastState2) {
+		P2 = true;
 		resetTimer(T1);
-		LastState = PlaceBonusSequenceState;
+		LastState2 = PlaceBonusSequenceState;
 	}
 	else {
-		P1 = false;
+		P2 = false;
 	};
 	switch (PlaceBonusSequenceState){
 	case 1:
@@ -224,51 +251,49 @@ void PlaceBonusSequence () {
 		break;
 
 	case 2:
-		if (P1) {
-			if (TurnDegrees(35.0)) {
-				PickupBonusSequenceState = 3;
-			};
-			delay(100);
+		if (P2) {
+			ArmPresetValue=3;
+			ArmHeightMove();
+			delay(800);
+			driveDistance(600);
+			//debugging for accuracy
+			//delay(10000);
+			//
+			delay(500);
+		};
+		if (getMotorZeroVelocity(Left)) {
+			PlaceBonusSequenceState = 3;
 		};
 		break;
 
 	case 3:
-		if (P1) {
-			driveDistance(70);
-			delay(100);
+		if (P2) {
+			driveDistance(-100);
+			delay(400);
+			ArmPresetValue=2;
+			ArmHeightMove();
+			delay(800);
+
 		};
-		if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>1500)) {
+		if (getMotorZeroVelocity(ArmLeft) || (getTimerValue(T1)>3000)) {
 			PlaceBonusSequenceState = 4;
 		};
 		break;
 
 	case 4:
-			if (TurnDegrees(-70.0)) {
-				PickupBonusSequenceState = 5;
-			};
-		break;
-
-	case 5:
-		if (P1) {
-			ArmPresetValue = 3;
-			delay(500);
-			driveDistance(-40);
+		if (P2) {
+			driveDistance(-600);
+			delay(800);
+			ArmPresetValue=0;
+			ArmHeightMove();
 			delay(100);
-
 		};
-		if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>1500)) {
-			PlaceBonusSequenceState = 6;
+		if(getTimerValue(T1)>1500) {
+			ArmHeightMove();
 		};
-		/*		if(getTimerValue(T1)>1500) {
-		ArmPresetValue = 0;
-		ArmHeightMove();
-		}; 														*/
-		break;
-
-	case 6:
-			if (TurnDegrees(35.0)) {
-				PickupBonusSequenceState = 1;
-			};
+		if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>3000)) {
+			PlaceBonusSequenceState = 1;
+		};
 		break;
 
 
@@ -321,7 +346,7 @@ task odometry () { // odometry task
 		//displayVariableValues(line2,yaxisPos);
 		//displayVariableValues(line3,robotPosition);
 		//displayVariableValues(line4, robotAngle);
-	//	displayVariableValues(line5, getGyroDegreesFloat(Main_Gyro));
+		//	displayVariableValues(line5, getGyroDegreesFloat(Main_Gyro));
 	};
 };
 /*
@@ -335,38 +360,38 @@ int HeadingStraight;
 
 task gyroTask()
 {
- long rate;
- long angle, lastAngle;
- lastAngle = 0;
- gyroError=0;
- // Change sensitivity, this allows the rate reading to be higher
- setGyroSensitivity(Main_Gyro, gyroNormalSensitivity);
- //Reset the gyro sensor to remove any previous data.
- resetGyro(Main_Gyro);
- wait1Msec(1000);
- repeat (forever) {
-  rate = getGyroRate(Main_Gyro);
-  angle = getGyroDegrees(Main_Gyro);
-  // If big rate then ignore gyro changes
-  if( abs( rate ) < 2 )
-  {
-   if( angle != lastAngle )
-    gyroError += lastAngle - angle;
-  }
-  lastAngle = angle;
-  gyroValue = angle + gyroError;
-  wait1Msec(10);
- }
+	long rate;
+	long angle, lastAngle;
+	lastAngle = 0;
+	gyroError=0;
+	// Change sensitivity, this allows the rate reading to be higher
+	setGyroSensitivity(Main_Gyro, gyroNormalSensitivity);
+	//Reset the gyro sensor to remove any previous data.
+	resetGyro(Main_Gyro);
+	wait1Msec(1000);
+	repeat (forever) {
+		rate = getGyroRate(Main_Gyro);
+		angle = getGyroDegrees(Main_Gyro);
+		// If big rate then ignore gyro changes
+		if( abs( rate ) < 2 )
+		{
+			if( angle != lastAngle )
+				gyroError += lastAngle - angle;
+		}
+		lastAngle = angle;
+		gyroValue = angle + gyroError;
+		wait1Msec(10);
+	}
 }
 /*
 task keepStraight(){
- while(true) {
-  HeadingStraight=0;
-  if(gyroValue<-2){HeadingStraight=-6;}
-  if(gyroValue>2){HeadingStraight=6;}
-  wait1Msec(100);
-  setMotorSpeed(Left, SpeedLeft-HeadingStraight);
-  setMotorSpeed(Right,SpeedRight +HeadingStraight);
+while(true) {
+HeadingStraight=0;
+if(gyroValue<-2){HeadingStraight=-6;}
+if(gyroValue>2){HeadingStraight=6;}
+wait1Msec(100);
+setMotorSpeed(Left, SpeedLeft-HeadingStraight);
+setMotorSpeed(Right,SpeedRight +HeadingStraight);
 }}*/
 
 task main() { // main program code
@@ -423,15 +448,19 @@ task main() { // main program code
 		}
 
 		// Intake Code
+		if (getMotorEncoder(Intake)>=(990*2.666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666)) {
+			resetMotorEncoder(Intake);
+	};
+
 		if (!intakeStarted) {
 			waitUntil(getJoystickValue(BtnEDown));
 			intakeStarted = true;
 			resetTimer(timer2);
 		}
 		else if (!getJoystickValue(BtnEDown)) {
-			setMotorSpeed(Intake, 100);
+			setMotorSpeed(Intake, IntakeSpeed);
 			} else if(getJoystickValue(BtnEDown)){
-			setMotorSpeed(Intake, -100);
+			setMotorSpeed(Intake, -IntakeSpeed);
 		};
 
 		//Claw Code
@@ -444,7 +473,7 @@ task main() { // main program code
 		};
 
 		//DriveCode
-		if (PickupBonusSequenceState ==1 && PlaceBonusSequenceState == 1) {
+		if (PickupBonusSequenceState ==1 && PlaceBonusSequenceState ==1) {
 			if(abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {	//if the absoloute value of ChA is above 20 or the absoloute value of ChD is above 15 then allow the Motors to
 				setMotorSpeed(Left, getJoystickValue(ChA)); //set the value of the motor to the value of the controller joystick
 				setMotorSpeed(Right, getJoystickValue(ChD)); //set the value of the motor to the value of the controller joystick
