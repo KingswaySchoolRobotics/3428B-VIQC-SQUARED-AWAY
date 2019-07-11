@@ -394,17 +394,17 @@ setMotorSpeed(Left, SpeedLeft-HeadingStraight);
 setMotorSpeed(Right,SpeedRight +HeadingStraight);
 }}*/
 
-bool BatteryWarning(int MinimumVoltage = 6500, int WarningVoltage = 7000, int SafeVoltage = 7225, int WarningDelay = 0) {
+bool BatteryWarning(int MinimumVoltage = 6500, int WarningVoltage = 7000, int SafeVoltage = 8500, int WarningDelay = 0) {
 	if (nImmediateBatteryLevel<MinimumVoltage) {
 		delay(WarningDelay);
-			playRepetitiveSound(soundWrongWay, 10000);
-			setTouchLEDColor(LED, colorRed);
-			return true;
+		playRepetitiveSound(soundCarAlarm4, 10000);
+		setTouchLEDColor(LED, colorRed);
+		return true;
 		} else if (nImmediateBatteryLevel<WarningVoltage) {
 		delay(WarningDelay);
-			playRepetitiveSound(soundWrongWay, 10000);
-			setTouchLEDColor(LED, colorOrange);
-			return true;
+		playRepetitiveSound(soundCarAlarm2, 10000);
+		setTouchLEDColor(LED, colorOrange);
+		return true;
 		}else if (nImmediateBatteryLevel>SafeVoltage) {
 		delay(WarningDelay);
 		playRepetitiveSound(soundWrongWay, 10000);
