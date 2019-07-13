@@ -56,20 +56,13 @@ int   global_8 = 0;
 #define   DATALOG_SERIES_7    7
 #define   DATALOG_SERIES_8    8
 
-float xaxisPos = 0;
-float yaxisPos = 0;
-float robotAngle = 0;
-float robotPosition = 0;
-float dL = 0;
-float dR = 0;
-
-int ticksPerRev = 360;
-float diameter = 2.5;
-float radius = 1.25;
-float calibration = 3.14159265429*diameter/ticksPerRev; //C our calibration factor 2:11 video
-float avcR = 0.218166156547917;
-float avcL = 0.218166156547917;
-float distanceBetweenWheels = 7.25; // B (base line distance)
+int ticksPerRev = 959.9999999999999999999999999999999999999999999;
+float x;
+float y;
+float LeftDriveTraveled;
+float RightDriveTraveled;
+float diameter = 63.661977236758134307553505349006;
+float DriveWidth = 19.5; //cm  B (base line distance)
 
 bool intakeStarted; // defines the variable that waits until the intake button is pressed before starting Intake
 
@@ -221,16 +214,16 @@ void displayControl (int delayforscroll = 2000) {
 	displayTextLine(3,"Battery (MV) = %d", nImmediateBatteryLevel);
 	delay(delayforscroll);
 	displayTextLine(0, "Arm Height = %d", ((getMotorEncoder(ArmLeft)) + (getMotorEncoder(ArmRight)))/2); //Displays Average of motor encoders position
-	displayVariableValues(line1,xaxisPos);
-	displayVariableValues(line2,yaxisPos);
-	displayVariableValues(line3,robotPosition);
-	displayVariableValues(line4, robotAngle);
+	displayVariableValues(line1,x);
+	displayVariableValues(line2,y);
+	displayVariableValues(line3,LeftDriveTraveled);
+	displayVariableValues(line4,RightDriveTraveled);
 	displayVariableValues(line5, getGyroDegreesFloat(Main_Gyro));
 	delay(delayforscroll);
 	displayTextLine(0, "Arm Height = %d", ((getMotorEncoder(ArmLeft)) + (getMotorEncoder(ArmRight)))/2); //Displays Average of motor encoders position
-  displayVariableValues(line1,calibration);
-	displayVariableValues(line2,avcL);
-	displayVariableValues(line3,avcR);
+	displayVariableValues(line1, DriveWidth);
+	displayVariableValues(line2, diameter);
+	displayVariableValues(line3, PI);
 	displayVariableValues(line4, getGyroRate(Main_Gyro));
 	displayVariableValues(line5, getGyroDegreesFloat(Main_Gyro));
 	delay(delayforscroll);
@@ -419,17 +412,21 @@ void ArmReset() { // resets the arm if the bottom bumper is pressed
 
 
 task odometry () { // odometry task
+
+	setMotorEncoderUnits(encoderCounts);
+
+	float x = 0;
+	float y = 0;
+	float LeftDriveTraveled = 0;
+	float RightDriveTraveled = 0;
+
 	while(true)
 	{
-		setMotorEncoderUnits(encoderCounts);
-		dR = /*calibration * */ getMotorEncoder(Right);
-		dL = /*calibration * */ getMotorEncoder(Left);
-		robotPosition = (dR+dL) / 2;
-		robotAngle = (dL-dR) / distanceBetweenWheels * (180/3.14159265429);
-		xaxisPos = radius/2 * (dR + dL) * sin(robotAngle);
-		yaxisPos = radius/2 * (dR + dL) * cos(robotAngle);
-
-
+		LeftDriveTraveled = ((PI * diameter) / ticksPerRev) * (getMotorEncoder(Left) * 2.66666666666666666666666666666666666666666666666666666666666666);
+		RightDriveTraveled = ((PI * diameter) / ticksPerRev) * (getMotorEncoder(Right) * 2.66666666666666666666666666666666666666666666666666666666666666);
+		delay(10);
+		x = x + (((LeftDriveTraveled + RightDriveTraveled) / 2) * cos(getGyroDegreesFloat(Main_Gyro)));
+		y = y + (((LeftDriveTraveled + RightDriveTraveled) / 2) * sin(getGyroDegreesFloat(Main_Gyro)));
 	};
 };
 
@@ -528,8 +525,6 @@ task Functions(){
 		BatteryWarning();
 		ArmReset();
 		GrayscaleDetector();
-		PickupBonusSequence();
-		PlaceBonusSequence();
 		displayControl();
 	}
 }
@@ -551,6 +546,8 @@ task main() { // main program code
 
 	while(/*timer2 < 90*/ProgramPersmissionToStart) //while the program is running do this:
 	{
+		PickupBonusSequence();
+		PlaceBonusSequence();
 		//datalogging
 		/*
 		datalogDataGroupStart();
