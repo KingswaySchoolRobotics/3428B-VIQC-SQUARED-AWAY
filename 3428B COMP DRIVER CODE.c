@@ -414,6 +414,102 @@ bool BatteryWarning(int MinimumVoltage = 6500, int WarningVoltage = 7000, int Sa
 		return false;
 	};
 };
+// Global variables used by the sample code
+int   global_1 = 0;
+int   global_2 = 0;
+int   global_3 = 0;
+int   global_4 = 0;
+int   global_5 = 0;
+int   global_6 = 0;
+int   global_7 = 0;
+int   global_8 = 0;
+
+// We have 8 possible places to store data, we call each one a datalog series
+// This example uses the first four to store values.
+#define   DATALOG_SERIES_0    0
+#define   DATALOG_SERIES_1    1
+#define   DATALOG_SERIES_2    2
+#define   DATALOG_SERIES_3    3
+#define   DATALOG_SERIES_4    4
+#define   DATALOG_SERIES_5    5
+#define   DATALOG_SERIES_6    6
+#define   DATALOG_SERIES_7    7
+#define   DATALOG_SERIES_8    8
+
+task datacollection()
+// ignore values on bottom of screen only graph
+/*
+Exp1 ArmPresetValue (fix negs)
+	Black = ArmPresetValue
+Exp2 Motors
+ Drk-Green = Right
+ Purple = Left
+ Lime-Green = Intake
+ Maroon = CubeClaw
+
+Exp3 Gyro Readings
+	blue = with drift
+	yellow = drift
+	red = Main_Gyro
+
+*/
+{
+    int loops = 0;
+
+    // Clear old data
+    datalogClear();
+
+    while(true)
+        {
+        // datalogAddValue adds one row to the datalog but does not time stamp the value
+      //  datalogAddValue( DATALOG_SERIES_0, loops );
+
+        // Generate some intertesting data
+        //global_1 = sinDegrees( loops   ) * 500.0;
+        //global_2 = cosDegrees( loops*2 ) * 500.0;
+        //global_3 = 500 + (rand() % 50);
+
+        global_1 = getGyroDegrees(Main_Gyro); //series 1
+        global_2 = gyroValue; // 2
+        global_3 = gyroError; // 3
+        global_4 = ArmPresetValue; //4
+
+        global_5 = getMotorSpeed(Right); //5
+        global_6 = getMotorSpeed(Left); //6
+        global_7 = getMotorSpeed(Intake); //7
+        global_8 = getMotorSpeed(CubeClaw); //8
+
+
+
+        // datalogAddValue when surrounded by datalogDataGroupStart and datalogDataGroupEnd
+        // adds several values to one row of the datalog with a common time stamp
+        datalogDataGroupStart();
+        datalogAddValue( DATALOG_SERIES_0, global_1 );
+        datalogAddValue( DATALOG_SERIES_1, global_2 );
+        datalogAddValue( DATALOG_SERIES_2, global_3 );
+        datalogAddValue( DATALOG_SERIES_3, global_4 );
+        datalogAddValue( DATALOG_SERIES_4, global_5 );
+        datalogAddValue( DATALOG_SERIES_5, global_6 );
+        datalogAddValue( DATALOG_SERIES_6, global_7 );
+        datalogAddValue( DATALOG_SERIES_7, global_8 );
+        datalogDataGroupEnd();
+
+        // More examples of datalogAddValueWithTimeStamp
+        // The small delay is just for demonstration purposes
+        wait1Msec(10);
+        datalogAddValueWithTimeStamp( DATALOG_SERIES_3, global_3++ );
+        wait1Msec(10);
+        datalogAddValueWithTimeStamp( DATALOG_SERIES_3, global_3++ );
+
+        // Repeat sequence every 360 loops
+        if(loops++ == 360)
+          loops = 0;
+
+        // loop delay
+        wait1Msec(10);
+        }
+      }
+
 
 task main() { // main program code
 	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
@@ -423,18 +519,20 @@ task main() { // main program code
 	resetTimer(timer2);
 	GyroCustomCalibration(30);
 	delay(10);
+	startTask(datacollection);
 	startTask(odometry);
 	startTask(gyroTask);
 	while(/*timer2 < 90*/true) //while the program is running do this:
 	{
 		//datalogging
+	/*
 		datalogDataGroupStart();
 		datalogAddValue( 2, nImmediateBatteryLevel);
 		datalogAddValue( 6, getGyroHeading(Main_Gyro));
 		datalogAddValue( 7, gyroValue);
 		datalogAddValue( 8, gyroError);
 		datalogDataGroupEnd();
-
+*/
 		setTouchLEDColor(LED,colorNone);
 		ArmReset();
 		GrayscaleDetector();
