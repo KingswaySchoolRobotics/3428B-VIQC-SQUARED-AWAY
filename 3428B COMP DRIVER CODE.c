@@ -345,9 +345,9 @@ void PlaceBonusSequence () {
 
 	case 2:
 		if (P2) {
-		//	ArmPresetValue=3;
-		//	ArmHeightMove();
-		//	delay(800);
+			//	ArmPresetValue=3;
+			//	ArmHeightMove();
+			//	delay(800);
 			driveDistance(600);
 			//debugging for accuracy
 			//delay(10000);
@@ -423,7 +423,7 @@ task odometry () { // odometry task
 		RightDriveTraveled = (((3.14159 * diameter) / ticksPerRev) * (getMotorEncoder(Right))); // in mm
 		x = ((LeftDriveTraveled + RightDriveTraveled) / 2) * cos(gyroValue);
 		y = ((LeftDriveTraveled + RightDriveTraveled) / 2) * sin(gyroValue);
-		 delay(100);
+		delay(100);
 	};
 };
 
