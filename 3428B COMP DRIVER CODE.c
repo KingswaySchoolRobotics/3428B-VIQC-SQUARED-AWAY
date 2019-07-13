@@ -23,9 +23,11 @@
 
 bool ProgramPersmissionToStart = true;
 
-int IntakeSpeed = 100;
+int IntakeSpeed = 0; //100;
 
 bool IndexArmPressed; // defines the variable that check whether the controller lift buttons have been pressed during a sequence
+
+long OdometryAngle;
 
 long gyroValue;
 long gyroError;
@@ -56,7 +58,7 @@ int   global_8 = 0;
 #define   DATALOG_SERIES_7    7
 #define   DATALOG_SERIES_8    8
 
-int ticksPerRev = 959.9999999999999999999999999999999999999999999;
+int ticksPerRev = 960;
 float x;
 float y;
 float LeftDriveTraveled;
@@ -223,7 +225,7 @@ void displayControl (int delayforscroll = 2000) {
 	displayTextLine(0, "Arm Height = %d", ((getMotorEncoder(ArmLeft)) + (getMotorEncoder(ArmRight)))/2); //Displays Average of motor encoders position
 	displayVariableValues(line1, DriveWidth);
 	displayVariableValues(line2, diameter);
-	displayVariableValues(line3, PI);
+	displayVariableValues(line3, OdometryAngle);
 	displayVariableValues(line4, getGyroRate(Main_Gyro));
 	displayVariableValues(line5, getGyroDegreesFloat(Main_Gyro));
 	delay(delayforscroll);
@@ -343,9 +345,9 @@ void PlaceBonusSequence () {
 
 	case 2:
 		if (P2) {
-			ArmPresetValue=3;
-			ArmHeightMove();
-			delay(800);
+		//	ArmPresetValue=3;
+		//	ArmHeightMove();
+		//	delay(800);
 			driveDistance(600);
 			//debugging for accuracy
 			//delay(10000);
@@ -353,7 +355,7 @@ void PlaceBonusSequence () {
 			delay(500);
 		};
 		if (getMotorZeroVelocity(Left)) {
-			PlaceBonusSequenceState = 3;
+			PlaceBonusSequenceState = 1;
 		};
 		break;
 
@@ -414,19 +416,14 @@ void ArmReset() { // resets the arm if the bottom bumper is pressed
 task odometry () { // odometry task
 
 	setMotorEncoderUnits(encoderCounts);
-
-	float x = 0;
-	float y = 0;
-	float LeftDriveTraveled = 0;
-	float RightDriveTraveled = 0;
-
 	while(true)
 	{
-		LeftDriveTraveled = ((PI * diameter) / ticksPerRev) * (getMotorEncoder(Left) * 2.66666666666666666666666666666666666666666666666666666666666666);
-		RightDriveTraveled = ((PI * diameter) / ticksPerRev) * (getMotorEncoder(Right) * 2.66666666666666666666666666666666666666666666666666666666666666);
-		delay(10);
-		x = x + (((LeftDriveTraveled + RightDriveTraveled) / 2) * cos(getGyroDegreesFloat(Main_Gyro)));
-		y = y + (((LeftDriveTraveled + RightDriveTraveled) / 2) * sin(getGyroDegreesFloat(Main_Gyro)));
+		OdometryAngle = (LeftDriveTraveled - RightDriveTraveled)  / DriveWidth;
+		LeftDriveTraveled = (((3.14159 * diameter) / ticksPerRev) * (getMotorEncoder(Left))); // in mm
+		RightDriveTraveled = (((3.14159 * diameter) / ticksPerRev) * (getMotorEncoder(Right))); // in mm
+		x = ((LeftDriveTraveled + RightDriveTraveled) / 2) * cos(gyroValue);
+		y = ((LeftDriveTraveled + RightDriveTraveled) / 2) * sin(gyroValue);
+		 delay(100);
 	};
 };
 
@@ -435,8 +432,6 @@ task gyroTask()
 {
 	long rate;
 	long angle, lastAngle;
-	lastAngle = 0;
-	gyroError=0;
 	// Change sensitivity, this allows the rate reading to be higher
 	setGyroSensitivity(Main_Gyro, gyroNormalSensitivity);
 	//Reset the gyro sensor to remove any previous data.
