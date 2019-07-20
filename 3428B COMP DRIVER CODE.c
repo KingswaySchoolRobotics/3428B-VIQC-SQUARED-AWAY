@@ -23,7 +23,7 @@
 
 bool ProgramPersmissionToStart = true;
 
-int IntakeSpeed = 0; //100;
+int IntakeSpeed = 100; // always 100
 
 bool IndexArmPressed; // defines the variable that check whether the controller lift buttons have been pressed during a sequence
 
@@ -528,6 +528,8 @@ task Functions(){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 task main() { // main program code
+setMotorBrakeMode(ArmRight, motorBrake);
+setMotorBrakeMode(ArmLeft, motorBrake);
 	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
 	resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
 	intakeStarted = false; // sets the variable that starts the intake to false
