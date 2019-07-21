@@ -42,12 +42,12 @@ bool intakeStarted; // defines the variable that waits until the intake button i
 #define 	DriveWidth 19.5 //cm  B (base line distance)
 #define 	ticksPerRev 960
 #define 	IntakeSpeed 100 // always 100
-#define 	Height0 0 //Floor 2", 8/16
-#define 	Height1 -300 //Position for Cube Raise 5", 8/16
-#define 	Height2 -500 // 9", 15/16
-#define		Height3 -700 //Ride Height 9", 15/16  //11" 8/16//
-#define 	Height4 -1000 //Place Cube on Low Score Platform 12" 14/16
-//#define	 Height5 -1000; //Height4 = 850;
+#define 	Height0 0 //Floor																				\\ \.
+#define 	Height1 -300 //Travel Height															\\ \.
+#define 	Height2 -500 //Low Platform Place														   > Arm Height Presets
+#define		Height3 -700 //Low Platform Position / Top Platform Place // /.
+#define 	Height4 -1000 //Top Platfrom Position										// /.
+//#define	 Height5 -1000; //
 
 long OdometryAngle;
 long gyroValue;
@@ -221,6 +221,16 @@ void displayControl (int delayforscroll = 2000) {
 	displayVariableValues(line5, getGyroDegreesFloat(Main_Gyro));
 	delay(delayforscroll);
 }
+void GrabCube () {
+setMotorSpeed(CubeClaw, -100);
+delay(500);
+};
+
+void ReleaseCube() {
+setMotorSpeed(CubeClaw, 100);
+delay(500);
+};
+
 void GyroCustomCalibration(int count = 30) {
 	startGyroCalibration( Main_Gyro, gyroCalibrateSamples512 );
 	// delay so calibrate flag can be set internally to the gyro
@@ -233,7 +243,7 @@ void GyroCustomCalibration(int count = 30) {
 };
 
 //////////////////////////////////////////////////////
-//							 Place cube Sequence								//
+//							 Pickup cube Sequence								//
 //////////////////////////////////////////////////////
 
 void PickupBonusSequence () {
@@ -312,7 +322,7 @@ void PickupBonusSequence () {
 };
 
 //////////////////////////////////////////////////////
-//							 Pickup cube Sequence								//
+//							 Place cube Sequence								//
 //////////////////////////////////////////////////////
 
 void PlaceBonusSequence () {
@@ -336,50 +346,54 @@ void PlaceBonusSequence () {
 
 	case 2:
 		if (P2) {
-			//	ArmPresetValue=3;
-			//	ArmHeightMove();
-			//	delay(800);
-			driveDistance(600);
-			//debugging for accuracy
-			//delay(10000);
-			//
-			delay(500);
+			ArmPresetValue=3;
+			ArmHeightMove();
+			delay(100);
+			GrabCube();
 		};
-		if (getMotorZeroVelocity(Left)) {
-			PlaceBonusSequenceState = 1;
+		if (getMotorZeroVelocity(ArmLeft) || (getTimerValue(T1)>3000)) {
+			PlaceBonusSequenceState = 3;
 		};
 		break;
 
 	case 3:
 		if (P2) {
-			driveDistance(-100);
-			delay(400);
+			driveDistance(150);
+			delay(1000);
 			ArmPresetValue=2;
 			ArmHeightMove();
-			delay(800);
-
+			delay(400);
 		};
-		if (getMotorZeroVelocity(ArmLeft) || (getTimerValue(T1)>3000)) {
+		if(getTimerValue(T1)>1500) {
+			ArmHeightMove();
+		};
+		if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>3000)) {
 			PlaceBonusSequenceState = 4;
 		};
 		break;
 
 	case 4:
 		if (P2) {
-			driveDistance(-600);
+			ReleaseCube();
+			delay(400);
+			driveDistance(-150);
+	};
+	if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>3000)) {
+	PlaceBonusSequenceState = 5;
+};
+	break;
+
+		case 5:
+		if (P2) {
 			delay(800);
 			ArmPresetValue=0;
 			ArmHeightMove();
-			delay(100);
+			delay(800);
 		};
-		if(getTimerValue(T1)>1500) {
-			ArmHeightMove();
-		};
-		if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>3000)) {
+		if (getMotorZeroVelocity(ArmLeft) || (getTimerValue(T1)>3000)) {
 			PlaceBonusSequenceState = 1;
 		};
 		break;
-
 
 	default: PlaceBonusSequenceState = 1;
 	};
@@ -413,6 +427,7 @@ void ClawLimits () {
 		MaxClawBrake = false;
 	};
 };
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//																			 						Tasks																									//
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -556,7 +571,8 @@ void ClawLimits () {
 		startTask(datacollection);
 		startTask(odometry);
 		startTask(gyroTask);
-
+		playSound(soundGasFillup);
+		delay(100);
 		while(/*timer2 < 90*/ProgramPersmissionToStart) //while the program is running do this:
 		{
 			PickupBonusSequence();
