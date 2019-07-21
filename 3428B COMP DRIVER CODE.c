@@ -22,32 +22,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool ProgramPersmissionToStart = true;
-
-int IntakeSpeed = 100; // always 100
-
+bool MaxClawBrake = false;
 bool IndexArmPressed; // defines the variable that check whether the controller lift buttons have been pressed during a sequence
+bool intakeStarted; // defines the variable that waits until the intake button is pressed before starting Intake
 
-long OdometryAngle;
-
-long gyroValue;
-long gyroError;
-//int CorrectionRatioforDrivingSequences = 600/225;
-//int gyrodriftrate = 37;
-int PickupBonusSequenceState; // defines the variable that is used to tell what state the Pickup Bonus Sequence is in
-int PlaceBonusSequenceState; // defines the variable that is used to tell what state the Place Bonus Sequence is in
-
-// Global variables used by the sample code
-int   global_1 = 0;
-int   global_2 = 0;
-int   global_3 = 0;
-int   global_4 = 0;
-int   global_5 = 0;
-int   global_6 = 0;
-int   global_7 = 0;
-int   global_8 = 0;
-
-// We have 8 possible places to store data, we call each one a datalog series
-// This example uses the first four to store values.
 #define   DATALOG_SERIES_0    0
 #define   DATALOG_SERIES_1    1
 #define   DATALOG_SERIES_2    2
@@ -57,31 +35,44 @@ int   global_8 = 0;
 #define   DATALOG_SERIES_6    6
 #define   DATALOG_SERIES_7    7
 #define   DATALOG_SERIES_8    8
+#define 	MaxClawIN 96
+#define 	MaxClawOUT 660
+#define 	MaxClawSTART 110
+#define		diameter 63.661977236758134307553505349006
+#define 	DriveWidth 19.5 //cm  B (base line distance)
+#define 	ticksPerRev 960
+#define 	IntakeSpeed 100 // always 100
+#define 	Height0 0 //Floor 2", 8/16
+#define 	Height1 -300 //Position for Cube Raise 5", 8/16
+#define 	Height2 -500 // 9", 15/16
+#define		Height3 -700 //Ride Height 9", 15/16  //11" 8/16//
+#define 	Height4 -1000 //Place Cube on Low Score Platform 12" 14/16
+//#define	 Height5 -1000; //Height4 = 850;
 
-int ticksPerRev = 960;
+long OdometryAngle;
+long gyroValue;
+long gyroError;
+
+int PickupBonusSequenceState; // defines the variable that is used to tell what state the Pickup Bonus Sequence is in
+int PlaceBonusSequenceState; // defines the variable that is used to tell what state the Place Bonus Sequence is in
+int   global_1 = 0;
+int   global_2 = 0;
+int   global_3 = 0;
+int   global_4 = 0;
+int   global_5 = 0;
+int   global_6 = 0;
+int   global_7 = 0;
+int   global_8 = 0;
+int ArmPresetValue = 0; //The preset number that tells the preset code how high to move the arm
+//int SpeedLeft = 0;
+//int SpeedRight = 0;
+//int Heading = 0;
+//int HeadingStraight;
+
 float x;
 float y;
 float LeftDriveTraveled;
 float RightDriveTraveled;
-float diameter = 63.661977236758134307553505349006;
-float DriveWidth = 19.5; //cm  B (base line distance)
-
-bool intakeStarted; // defines the variable that waits until the intake button is pressed before starting Intake
-
-float Height0 = 0; //Floor 2", 8/16
-float Height1 = -300; //Position for Cube Raise 5", 8/16
-float Height2 = -500; // 9", 15/16
-float Height3 = -700; //Ride Height 9", 15/16  //11" 8/16//
-float Height4 = -1000; //Place Cube on Low Score Platform 12" 14/16
-//float Height5 = -1000; //Height4 = 850;
-int ArmPresetValue = 0; //The preset number that tells the preset code how high to move the arm
-
-/*
-int SpeedLeft = 0;
-int SpeedRight = 0;
-int Heading = 0;
-int HeadingStraight;
-*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //																						Bool Functions																							//
@@ -408,216 +399,241 @@ void ArmReset() { // resets the arm if the bottom bumper is pressed
 		setTouchLEDColor(LED,colorNone);
 	}
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//																			 						Tasks																									//
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-task odometry () { // odometry task
-
-	setMotorEncoderUnits(encoderCounts);
-	while(true)
-	{
-		OdometryAngle = (LeftDriveTraveled - RightDriveTraveled)  / DriveWidth;
-		LeftDriveTraveled = (((3.14159 * diameter) / ticksPerRev) * (getMotorEncoder(Left))); // in mm
-		RightDriveTraveled = (((3.14159 * diameter) / ticksPerRev) * (getMotorEncoder(Right))); // in mm
-		x = ((LeftDriveTraveled + RightDriveTraveled) / 2) * cos(gyroValue);
-		y = ((LeftDriveTraveled + RightDriveTraveled) / 2) * sin(gyroValue);
-		delay(100);
+void ClawLimits () {
+	delay(100);
+	waitUntil(getMotorEncoder(CubeClaw)>(MaxClawSTART));
+	if (getMotorEncoder(CubeClaw)>=MaxClawOUT && !MaxClawBrake) {
+		stopMotor(CubeClaw);
+		MaxClawBrake = true;
+		} else if (getMotorEncoder(CubeClaw)<=MaxClawIN && !MaxClawBrake){
+		stopMotor(CubeClaw);
+		MaxClawBrake = true;
+		} else {
+		MaxClawBrake = false;
 	};
 };
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//																			 						Tasks																									//
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-task gyroTask()
-{
-	long rate;
-	long angle, lastAngle;
-	// Change sensitivity, this allows the rate reading to be higher
-	setGyroSensitivity(Main_Gyro, gyroNormalSensitivity);
-	//Reset the gyro sensor to remove any previous data.
-	resetGyro(Main_Gyro);
-	wait1Msec(1000);
-	repeat (forever) {
-		rate = getGyroRate(Main_Gyro);
-		angle = getGyroDegrees(Main_Gyro);
-		// If big rate then ignore gyro changes
-		if( abs( rate ) < 2 )
+	task odometry () { // odometry task
+
+		setMotorEncoderUnits(encoderCounts);
+		while(true)
 		{
-			if( angle != lastAngle )
-				gyroError += lastAngle - angle;
-		}
-		lastAngle = angle;
-		gyroValue = angle + gyroError;
-		wait1Msec(10);
-	}
-}
-/*
-task keepStraight(){
-while(true) {
-HeadingStraight=0;
-if(gyroValue<-2){HeadingStraight=-6;}
-if(gyroValue>2){HeadingStraight=6;}
-wait1Msec(100);
-setMotorSpeed(Left, SpeedLeft-HeadingStraight);
-setMotorSpeed(Right,SpeedRight +HeadingStraight);
-}}*/
+			OdometryAngle = (LeftDriveTraveled - RightDriveTraveled)  / DriveWidth;
+			LeftDriveTraveled = (((3.14159 * diameter) / ticksPerRev) * (getMotorEncoder(Left))); // in mm
+			RightDriveTraveled = (((3.14159 * diameter) / ticksPerRev) * (getMotorEncoder(Right))); // in mm
+			x = ((LeftDriveTraveled + RightDriveTraveled) / 2) * cos(gyroValue);
+			y = ((LeftDriveTraveled + RightDriveTraveled) / 2) * sin(gyroValue);
+			delay(100);
+		};
+	};
 
-task datacollection()
-/* ignore values on bottom of screen only graph values are valid /
-Exp1 ArmPresetValue (fix negs)
-Black = ArmPresetValue
-Exp2 Motors
-Drk-Green = Right
-Purple = Left
-Lime-Green = Intake
-Maroon = CubeClaw
 
-Exp3 Gyro Readings
-blue = with drift
-yellow = drift
-red = Main_Gyro with out Drift
-*/
-{
-	int loops = 0;
-	datalogClear();
-	while(true)
+	task gyroTask()
 	{
-		global_1 = getGyroDegrees(Main_Gyro); //series 1
-		global_2 = gyroValue; // 2
-		global_3 = gyroError; // 3
-		global_4 = ArmPresetValue; //4
-		global_5 = getMotorSpeed(Right); //5
-		global_6 = getMotorSpeed(Left); //6
-		global_7 = getMotorSpeed(Intake); //7
-		global_8 = getMotorSpeed(CubeClaw); //8
-
-		datalogDataGroupStart();
-		datalogAddValue( DATALOG_SERIES_0, global_1 );
-		datalogAddValue( DATALOG_SERIES_1, global_2 );
-		datalogAddValue( DATALOG_SERIES_2, global_3 );
-		datalogAddValue( DATALOG_SERIES_3, global_4 );
-		datalogAddValue( DATALOG_SERIES_4, global_5 );
-		datalogAddValue( DATALOG_SERIES_5, global_6 );
-		datalogAddValue( DATALOG_SERIES_6, global_7 );
-		datalogAddValue( DATALOG_SERIES_7, global_8 );
-		datalogDataGroupEnd();
-
-		wait1Msec(10);
-		datalogAddValueWithTimeStamp( DATALOG_SERIES_3, global_3++ );
-		wait1Msec(10);
-		datalogAddValueWithTimeStamp( DATALOG_SERIES_3, global_3++ );
-
-		// Repeat sequence every 360 loops
-		if(loops++ == 360)
-			loops = 0;
-
-		// loop delay
-		wait1Msec(10);
-	}
-}
-task Functions(){
-	while(true){
-		BatteryWarning();
-		ArmReset();
-		GrayscaleDetector();
-		displayControl();
-	}
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//																			 				Main Task																									//
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-task main() { // main program code
-setMotorBrakeMode(ArmRight, motorBrake);
-setMotorBrakeMode(ArmLeft, motorBrake);
-	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
-	resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
-	intakeStarted = false; // sets the variable that starts the intake to false
-	resetTimer(timer2);
-	GyroCustomCalibration(30);
-	delay(10);
-	startTask(Functions);
-	startTask(datacollection);
-	startTask(odometry);
-	startTask(gyroTask);
-
-	while(/*timer2 < 90*/ProgramPersmissionToStart) //while the program is running do this:
-	{
-		PickupBonusSequence();
-		PlaceBonusSequence();
-		//datalogging
-		/*
-		datalogDataGroupStart();
-		datalogAddValue( 2, nImmediateBatteryLevel);
-		datalogAddValue( 6, getGyroHeading(Main_Gyro));
-		datalogAddValue( 7, gyroValue);
-		datalogAddValue( 8, gyroError);
-		datalogDataGroupEnd();
-		*/
-		setTouchLEDColor(LED,colorNone);
-		//Arm Code
-		if (getJoystickValue(BtnLDown)==1 && IndexArmPressed==false) {  //gets the reading of LUP & LDOWN and turns it into a variable(ArmPresetValue)
-			ArmPresetValue = (ArmPresetValue-1);
-			ArmHeightMove();
-			IndexArmPressed=true;
+		long rate;
+		long angle, lastAngle;
+		// Change sensitivity, this allows the rate reading to be higher
+		setGyroSensitivity(Main_Gyro, gyroNormalSensitivity);
+		//Reset the gyro sensor to remove any previous data.
+		resetGyro(Main_Gyro);
+		wait1Msec(1000);
+		repeat (forever) {
+			rate = getGyroRate(Main_Gyro);
+			angle = getGyroDegrees(Main_Gyro);
+			// If big rate then ignore gyro changes
+			if( abs( rate ) < 2 )
+			{
+				if( angle != lastAngle )
+					gyroError += lastAngle - angle;
+			}
+			lastAngle = angle;
+			gyroValue = angle + gyroError;
+			wait1Msec(10);
 		}
-		else {
-			if (getJoystickValue(BtnLUp)==1 && IndexArmPressed==false) {
-				ArmPresetValue = (ArmPresetValue+1);
+	}
+	/*
+	task keepStraight(){
+	while(true) {
+	HeadingStraight=0;
+	if(gyroValue<-2){HeadingStraight=-6;}
+	if(gyroValue>2){HeadingStraight=6;}
+	wait1Msec(100);
+	setMotorSpeed(Left, SpeedLeft-HeadingStraight);
+	setMotorSpeed(Right,SpeedRight +HeadingStraight);
+	}}*/
+
+	task datacollection()
+	/* ignore values on bottom of screen only graph values are valid /
+	Exp1 ArmPresetValue (fix negs)
+	Black = ArmPresetValue
+	Exp2 Motors
+	Drk-Green = Right
+	Purple = Left
+	Lime-Green = Intake
+	Maroon = CubeClaw
+
+	Exp3 Gyro Readings
+	blue = with drift
+	yellow = drift
+	red = Main_Gyro with out Drift
+	*/
+	{
+		int loops = 0;
+		datalogClear();
+		while(true)
+		{
+			global_1 = getGyroDegrees(Main_Gyro); //series 1
+			global_2 = gyroValue; // 2
+			global_3 = gyroError; // 3
+			global_4 = ArmPresetValue; //4
+			global_5 = getMotorSpeed(Right); //5
+			global_6 = getMotorSpeed(Left); //6
+			global_7 = getMotorSpeed(Intake); //7
+			global_8 = getMotorSpeed(CubeClaw); //8
+
+			datalogDataGroupStart();
+			datalogAddValue( DATALOG_SERIES_0, global_1 );
+			datalogAddValue( DATALOG_SERIES_1, global_2 );
+			datalogAddValue( DATALOG_SERIES_2, global_3 );
+			datalogAddValue( DATALOG_SERIES_3, global_4 );
+			datalogAddValue( DATALOG_SERIES_4, global_5 );
+			datalogAddValue( DATALOG_SERIES_5, global_6 );
+			datalogAddValue( DATALOG_SERIES_6, global_7 );
+			datalogAddValue( DATALOG_SERIES_7, global_8 );
+			datalogDataGroupEnd();
+
+			wait1Msec(10);
+			datalogAddValueWithTimeStamp( DATALOG_SERIES_3, global_3++ );
+			wait1Msec(10);
+			datalogAddValueWithTimeStamp( DATALOG_SERIES_3, global_3++ );
+
+			// Repeat sequence every 360 loops
+			if(loops++ == 360)
+				loops = 0;
+
+			// loop delay
+			wait1Msec(10);
+		}
+	}
+	task Functions(){
+		while(true){
+			BatteryWarning();
+			ArmReset();
+			GrayscaleDetector();
+			displayControl();
+			ClawLimits();
+		}
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//																			 				Main Task																									//
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	task main() { // main program code
+		//SET MOTORS TO BRAKE MODE
+		setMotorBrakeMode(ArmRight, motorBrake);
+		setMotorBrakeMode(ArmLeft, motorBrake);
+		setMotorBrakeMode(Right, motorBrake);
+		setMotorBrakeMode(Left, motorBrake);
+		setMotorBrakeMode(CubeClaw, motorBrake);
+		setMotorBrakeMode(Intake, motorBrake);
+		//RESET MOTOR ENCODERS
+		resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
+		resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
+		resetMotorEncoder(Left);	 //Resets Left Arm Motor Encoder to 0
+		resetMotorEncoder(Right); //Resets Right Arm Motor Encoder to 0
+		resetMotorEncoder(CubeClaw);	 //Resets Left Arm Motor Encoder to 0
+		resetMotorEncoder(Intake); //Resets Right Arm Motor Encoder to 0
+		intakeStarted = false; // sets the variable that starts the intake to false
+		resetTimer(timer2);
+		GyroCustomCalibration(30);
+		delay(10);
+		startTask(Functions);
+		startTask(datacollection);
+		startTask(odometry);
+		startTask(gyroTask);
+
+		while(/*timer2 < 90*/ProgramPersmissionToStart) //while the program is running do this:
+		{
+			PickupBonusSequence();
+			PlaceBonusSequence();
+			//datalogging
+			/*
+			datalogDataGroupStart();
+			datalogAddValue( 2, nImmediateBatteryLevel);
+			datalogAddValue( 6, getGyroHeading(Main_Gyro));
+			datalogAddValue( 7, gyroValue);
+			datalogAddValue( 8, gyroError);
+			datalogDataGroupEnd();
+			*/
+			setTouchLEDColor(LED,colorNone);
+			//Arm Code
+			if (getJoystickValue(BtnLDown)==1 && IndexArmPressed==false) {  //gets the reading of LUP & LDOWN and turns it into a variable(ArmPresetValue)
+				ArmPresetValue = (ArmPresetValue-1);
 				ArmHeightMove();
 				IndexArmPressed=true;
 			}
-		};
-		if (getJoystickValue(BtnLDown)==0 && getJoystickValue(BtnLUp)==0) {
-			IndexArmPressed=false;
-		};
-
-		if (0>ArmPresetValue){
-			ArmPresetValue = 0;
-		}
-		else {
-			if (4<ArmPresetValue) {
-				ArmPresetValue = 4;
+			else {
+				if (getJoystickValue(BtnLUp)==1 && IndexArmPressed==false) {
+					ArmPresetValue = (ArmPresetValue+1);
+					ArmHeightMove();
+					IndexArmPressed=true;
+				}
 			};
+			if (getJoystickValue(BtnLDown)==0 && getJoystickValue(BtnLUp)==0) {
+				IndexArmPressed=false;
+			};
+
+			if (0>ArmPresetValue){
+				ArmPresetValue = 0;
+			}
+			else {
+				if (4<ArmPresetValue) {
+					ArmPresetValue = 4;
+				};
+			}
+
+			// Intake Code
+			if (getMotorEncoder(Intake)>=(990*2.666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666)) {
+				resetMotorEncoder(Intake);
+		};
+
+		if (!intakeStarted) {
+			waitUntil(getJoystickValue(BtnEDown));
+			intakeStarted = true;
+			resetTimer(timer2);
 		}
+		else if (!getJoystickValue(BtnEDown)) {
+			setMotorSpeed(Intake, IntakeSpeed);
+			} else if(getJoystickValue(BtnEDown)){
+			setMotorSpeed(Intake, -IntakeSpeed);
+		};
 
-		// Intake Code
-		if (getMotorEncoder(Intake)>=(990*2.666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666)) {
-			resetMotorEncoder(Intake);
-	};
+		//Claw Code
+		if (getJoystickValue(BtnRUp) && !MaxClawBrake) {
+			setMotorSpeed(CubeClaw, 100);
+			} else if (getJoystickValue(BtnRDown) && !MaxClawBrake) {
+			setMotorSpeed(CubeClaw, -100);
+			} else {
+			setMotorSpeed(CubeClaw, 0);
+		};
 
-	if (!intakeStarted) {
-		waitUntil(getJoystickValue(BtnEDown));
-		intakeStarted = true;
-		resetTimer(timer2);
-	}
-	else if (!getJoystickValue(BtnEDown)) {
-		setMotorSpeed(Intake, IntakeSpeed);
-		} else if(getJoystickValue(BtnEDown)){
-		setMotorSpeed(Intake, -IntakeSpeed);
-	};
-
-	//Claw Code
-	if (getJoystickValue(BtnRUp)) {
-		setMotorSpeed(CubeClaw, 100);
-		} else if (getJoystickValue(BtnRDown)) {
-		setMotorSpeed(CubeClaw, -100);
-		} else {
-		setMotorSpeed(CubeClaw, 0);
-	};
-
-	//DriveCode
-	if (PickupBonusSequenceState ==1 && PlaceBonusSequenceState ==1) {
-		if(abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {	//if the absoloute value of ChA is above 20 or the absoloute value of ChD is above 15 then allow the Motors to
-			setMotorSpeed(Left, getJoystickValue(ChA)); //set the value of the motor to the value of the controller joystick
-			setMotorSpeed(Right, getJoystickValue(ChD)); //set the value of the motor to the value of the controller joystick
-		}
-		else { setMotorSpeed(Left, 0);	// if nothing is happening on the controller set the motor speed to 0
-			setMotorSpeed(Right, 0); // if nothing is happening on the controller set the motor speed to 0
+		//DriveCode
+		if (PickupBonusSequenceState ==1 && PlaceBonusSequenceState ==1) {
+			if(abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {	//if the absoloute value of ChA is above 20 or the absoloute value of ChD is above 15 then allow the Motors to
+				setMotorSpeed(Left, getJoystickValue(ChA)); //set the value of the motor to the value of the controller joystick
+				setMotorSpeed(Right, getJoystickValue(ChD)); //set the value of the motor to the value of the controller joystick
+			}
+			else { setMotorSpeed(Left, 0);	// if nothing is happening on the controller set the motor speed to 0
+				setMotorSpeed(Right, 0); // if nothing is happening on the controller set the motor speed to 0
+			};
 		};
 	};
-};
-setTouchLEDColor(LED,colorRed);
+	setTouchLEDColor(LED,colorRed);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
