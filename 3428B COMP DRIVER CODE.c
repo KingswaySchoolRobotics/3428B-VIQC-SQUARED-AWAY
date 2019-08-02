@@ -683,15 +683,15 @@ task main() { // main program code
 			resetMotorEncoder(Intake);
 	};
 
-	if (!intakeStarted) {
-		waitUntil(getJoystickValue(BtnEDown));
+	if (!intakeStarted && getJoystickValue(BtnEDown)) {
 		intakeStarted = true;
 		resetTimer(timer2);
-	}
-	else if (!getJoystickValue(BtnEDown)) {
 		setMotorSpeed(Intake, IntakeSpeed);
-		} else if(getJoystickValue(BtnEDown)){
-		setMotorSpeed(Intake, -IntakeSpeed);
+	}
+	else if (getJoystickValue(BtnEDown)) {
+		setMotorSpeed(Intake, IntakeSpeed);
+		} else if(!getJoystickValue(BtnEDown)){
+		setMotorSpeed(Intake, 0);
 	};
 
 	//Claw Code
