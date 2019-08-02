@@ -42,7 +42,7 @@ bool intakeStarted; // defines the variable that waits until the intake button i
 #define		diameter 63.661977236758134307553505349006
 #define 	DriveWidth 19.5 //cm  B (base line distance)
 #define 	ticksPerRev 960
-#define 	IntakeSpeed 100 // always 100
+#define 	IntakeSpeed 75
 #define 	Height0 0 //Floor																				\\ \.
 #define 	Height1 -300 //Travel Height															\\ \.
 #define 	Height2 -500 //Low Platform Place														   > Arm Height Presets
@@ -582,12 +582,12 @@ task Functions(){
 
 task main() { // main program code
 	//SET MOTORS TO BRAKE MODE
-	setMotorBrakeMode(ArmRight, motorBrake);
-	setMotorBrakeMode(ArmLeft, motorBrake);
-	setMotorBrakeMode(Right, motorBrake);
-	setMotorBrakeMode(Left, motorBrake);
-	setMotorBrakeMode(CubeClaw, motorBrake);
-	setMotorBrakeMode(Intake, motorBrake);
+	setMotorBrakeMode(ArmRight, motorHold);
+	setMotorBrakeMode(ArmLeft, motorHold);
+	setMotorBrakeMode(Right, motorHold);
+	setMotorBrakeMode(Left, motorHold);
+	setMotorBrakeMode(CubeClaw, motorHold);
+	setMotorBrakeMode(Intake, motorHold);
 	//RESET MOTOR ENCODERS
 	resetMotorEncoder(ArmLeft);	 //Resets Left Arm Motor Encoder to 0
 	resetMotorEncoder(ArmRight); //Resets Right Arm Motor Encoder to 0
