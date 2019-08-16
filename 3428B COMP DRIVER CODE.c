@@ -2,6 +2,8 @@
 #pragma config(Sensor, port3,  Main_Gyro,      sensorVexIQ_Gyro)
 #pragma config(Sensor, port4,  LED,            sensorVexIQ_LED)
 #pragma config(Sensor, port7,  CenterColor,    sensorVexIQ_ColorGrayscale)
+#pragma config(Sensor, port8,  BallColor,      sensorVexIQ_ColorHue)
+#pragma config(Sensor, port12, AutonStart,     sensorVexIQ_Touch)
 #pragma config(Motor,  motor1,          Left,          tmotorVexIQ, PIDControl, encoder)
 #pragma config(Motor,  motor5,          Intake,        tmotorVexIQ, PIDControl, encoder)
 #pragma config(Motor,  motor6,          Right,         tmotorVexIQ, PIDControl, reversed, encoder)
@@ -42,7 +44,7 @@ bool intakeStarted; // defines the variable that waits until the intake button i
 #define		diameter 63.661977236758134307553505349006
 #define 	DriveWidth 19.5 //cm  B (base line distance)
 #define 	ticksPerRev 960
-#define 	IntakeSpeed 75
+#define 	IntakeSpeed 67
 #define 	Height0 0 //Floor																				\\ \.
 #define 	Height1 -300 //Travel Height															\\ \.
 #define 	Height2 -500 //Low Platform Place														   > Arm Height Presets
@@ -58,6 +60,8 @@ bool intakeStarted; // defines the variable that waits until the intake button i
 #define 	FIELDX 2438.4
 #define		FIELDY 1219.2
 #define		RobotCenterOffset 101.6
+#define   LowerBracketHSV 14
+#define   UpperBracketHSV 40
 
 struct ODOMCOORDINATE {
 	int pX;
@@ -687,8 +691,12 @@ task main() { // main program code
 		intakeStarted = true;
 		resetTimer(timer2);
 		setMotorSpeed(Intake, IntakeSpeed);
+	} else if (getJoystickValue(BtnEDown) && (getColorHue(BallColor)>193)){
+	setMotorSpeed(Intake, (IntakeSpeed*0.75));
+	while((getJoystickValue(BtnEDown) && (getColorHue(BallColor)>193))){
+	delay(500);
 	}
-	else if (getJoystickValue(BtnEDown)) {
+} else if (getJoystickValue(BtnEDown)) {
 		setMotorSpeed(Intake, IntakeSpeed);
 		} else if(!getJoystickValue(BtnEDown)){
 		setMotorSpeed(Intake, 0);
