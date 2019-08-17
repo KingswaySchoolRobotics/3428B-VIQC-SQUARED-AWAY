@@ -693,9 +693,6 @@ task main() { // main program code
 		setMotorSpeed(Intake, IntakeSpeed);
 	} else if (getJoystickValue(BtnEDown) && (getColorHue(BallColor)>193)){
 	setMotorSpeed(Intake, (IntakeSpeed*0.75));
-	while((getJoystickValue(BtnEDown) && (getColorHue(BallColor)>193))){
-	delay(500);
-	}
 } else if (getJoystickValue(BtnEDown)) {
 		setMotorSpeed(Intake, IntakeSpeed);
 		} else if(!getJoystickValue(BtnEDown)){
