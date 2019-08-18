@@ -32,6 +32,8 @@ bool AutonSwitchActive;
 bool AutonSwitched = false;
 bool AutonDisplayInt = false;
 bool AutonPermissionToStart = false;
+bool AutonSelectLastState;
+
 
 #define   DATALOG_SERIES_0    0
 #define   DATALOG_SERIES_1    1
