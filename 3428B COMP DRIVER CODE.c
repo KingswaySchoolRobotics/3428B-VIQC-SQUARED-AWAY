@@ -38,9 +38,6 @@ bool intakeStarted; // defines the variable that waits until the intake button i
 #define   DATALOG_SERIES_6    6
 #define   DATALOG_SERIES_7    7
 #define   DATALOG_SERIES_8    8
-#define 	MaxClawIN 96
-#define 	MaxClawOUT 660
-#define 	MaxClawSTART 110
 #define		diameter 63.661977236758134307553505349006
 #define 	DriveWidth 19.5 //cm  B (base line distance)
 #define 	ticksPerRev 960
@@ -125,7 +122,7 @@ bool BatteryWarning(int MinimumVoltage = 6500, int WarningVoltage = 7000, int Sa
 		}else if (nImmediateBatteryLevel>SafeVoltage) {
 		delay(WarningDelay);
 		playRepetitiveSound(soundWrongWay, 100);
-		setTouchLEDColor(LED, colorOrange);
+		setTouchLEDColor(LED, colorRed);
 		return true;
 		} else {
 		return false;
@@ -442,20 +439,6 @@ void ArmReset() { // resets the arm if the bottom bumper is pressed
 	}
 }
 
-void ClawLimits () {
-	delay(100);
-	waitUntil(getMotorEncoder(CubeClaw)>(MaxClawSTART));
-	if (getMotorEncoder(CubeClaw)>=MaxClawOUT && !MaxClawBrake) {
-		stopMotor(CubeClaw);
-		MaxClawBrake = true;
-		} else if (getMotorEncoder(CubeClaw)<=MaxClawIN && !MaxClawBrake){
-		stopMotor(CubeClaw);
-		MaxClawBrake = true;
-		} else {
-		MaxClawBrake = false;
-	};
-};
-
 void ResetOdometry(){
 	resetMotorEncoder(Left);
 	resetMotorEncoder(Right);
@@ -495,7 +478,7 @@ task gyroTask()
 	wait1Msec(1000);
 	repeat (forever) {
 		rate = getGyroRate(Main_Gyro);
-		angle = getGyroDegrees(Main_Gyro);
+		angle = getGyroHeading(Main_Gyro);
 		// If big rate then ignore gyro changes
 		if( abs( rate ) < 2 )
 		{
@@ -538,10 +521,10 @@ red = Main_Gyro with out Drift
 	datalogClear();
 	while(true)
 	{
-		global_1 = getGyroDegrees(Main_Gyro); //series 1
+		global_1 = getGyroHeading(Main_Gyro); //series 1
 		global_2 = gyroValue; // 2
 		global_3 = gyroError; // 3
-		global_4 = ArmPresetValue; //4
+		global_4 = getColorHue(BallColor); //4
 		global_5 = getMotorSpeed(Right); //5
 		global_6 = getMotorSpeed(Left); //6
 		global_7 = getMotorSpeed(Intake); //7
@@ -577,7 +560,6 @@ task Functions(){
 		ArmReset();
 		GrayscaleDetector();
 		displayControl();
-		ClawLimits();
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -691,7 +673,7 @@ task main() { // main program code
 		intakeStarted = true;
 		resetTimer(timer2);
 		setMotorSpeed(Intake, IntakeSpeed);
-	} else if (getJoystickValue(BtnEDown) && (getColorHue(BallColor)>193)){
+	} else if (getJoystickValue(BtnEDown) && (getColorHue(BallColor)<20)){
 	setMotorSpeed(Intake, (IntakeSpeed*0.75));
 } else if (getJoystickValue(BtnEDown)) {
 		setMotorSpeed(Intake, IntakeSpeed);
