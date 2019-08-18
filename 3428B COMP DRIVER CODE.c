@@ -32,8 +32,7 @@ bool AutonSwitchActive;
 bool AutonSwitched = false;
 bool AutonDisplayInt = false;
 bool AutonPermissionToStart = false;
-bool AutonSelectLastState;
-
+bool AutonLocked = false;
 
 #define   DATALOG_SERIES_0    0
 #define   DATALOG_SERIES_1    1
@@ -85,6 +84,7 @@ long OdometryAngle;
 long gyroValue;
 long gyroError;
 
+int AutonSelectLastState;
 int AutonProgramSelector;
 int PickupBonusSequenceState; // defines the variable that is used to tell what state the Pickup Bonus Sequence is in
 int PlaceBonusSequenceState; // defines the variable that is used to tell what state the Place Bonus Sequence is in
@@ -529,14 +529,38 @@ red = Main_Gyro with out Drift
 //																			 						Tasks																									//
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 task AutonSelectControl () {
+	delay(2000);
+	displayTextLine(5, "Controls Active");
 	while (true) {
-		displayTextLine(1, "Auton Option=%d", AutonProgramSelector);
-		waitUntil(!getTouchLEDValue(LED));
-		if (getTouchLEDValue(LED) && (AutonProgramSelector < 4)) {
-			AutonProgramSelector = AutonProgramSelector + 1;
-			} else if (AutonProgramSelector <= MaxAutons) {
+		if (0>AutonProgramSelector ){
 			AutonProgramSelector = 0;
 		};
+		if (4<AutonProgramSelector) {
+			AutonProgramSelector = 0;
+		};
+
+		if (!AutonLocked) {
+			displayTextLine(1, "Auton Option=%d", AutonProgramSelector);
+			if ((getTouchLEDValue(LED)) && AutonSelectLastState == 0) {
+				AutonSelectLastState = getTouchLEDValue(LED);
+				AutonProgramSelector +=1;
+				} else if (getBumperValue(AutonStart)) {
+				AutonLocked = true;
+			}
+			else {
+				AutonSelectLastState = getTouchLEDValue(LED);
+			};
+			} else {
+			displayTextLine(1, "Controls Locked");
+			displayTextLine(2, "Auton Selected=%d", AutonProgramSelector);
+			displayTextLine(3, "Press LED to Start Auton");
+			if (AutonLocked && getTouchLEDValue(LED)) {
+				AutonPermissionToStart = true;
+			}
+			if (AutonPermissionToStart && getBumperValue(AutonStart)) {
+				AutonPermissionToStart = false;
+			}
+		}
 	};
 }
 
@@ -810,19 +834,34 @@ task main() { // main program code
 		};
 		while (!ProgramPersmissionToStart && AutonSwitched) {
 			startTask(AutonSelectControl);
+
 			switch (AutonProgramSelector) {
+
 			case 0:
 				waitUntil(AutonPermissionToStart);
 				setTouchLEDColor(LED,colorGreen);
+				displayTextLine(4, "Drive 100");
 				// Start of Auton Option 0 (Null/Test)
 				driveDistance(100);
 				delay(1000);
 				driveDistance(-100);
 				delay(1000);
 				setTouchLEDColor(LED,colorViolet);
+				AutonPermissionToStart = false;
 				break;
 
-
+			case 1:
+				waitUntil(AutonPermissionToStart);
+				setTouchLEDColor(LED,colorGreen);
+				displayTextLine(4, "Drive 200");
+				// Start of Auton Option 0 (Null/Test)
+				driveDistance(200);
+				delay(1000);
+				driveDistance(-200);
+				delay(1000);
+				setTouchLEDColor(LED,colorViolet);
+				AutonPermissionToStart = false;
+				break;
 			};
 		}
 		/////////////EOAS//////////////
