@@ -33,6 +33,7 @@ bool AutonSwitched = false;
 bool AutonDisplayInt = false;
 bool AutonPermissionToStart = false;
 bool AutonLocked = false;
+bool AutonFinished = false;
 
 #define   DATALOG_SERIES_0    0
 #define   DATALOG_SERIES_1    1
@@ -46,7 +47,7 @@ bool AutonLocked = false;
 #define		diameter 63.661977236758134307553505349006
 #define 	DriveWidth 19.5 //cm  B (base line distance)
 #define 	ticksPerRev 960
-#define 	IntakeSpeed 67
+#define 	IntakeSpeed 72.5
 #define 	Height0 0 //Floor																				\\ \.
 #define 	Height1 -300 //Travel Height															\\ \.
 #define 	Height2 -500 //Low Platform Place														   > Arm Height Presets
@@ -539,9 +540,9 @@ task AutonSelectControl () {
 			AutonProgramSelector = 0;
 		};
 
-		if (!AutonLocked) {
+		if (!AutonLocked && !AutonFinished) {
 			displayTextLine(1, "Auton Option=%d", AutonProgramSelector);
-			if ((getTouchLEDValue(LED)) && AutonSelectLastState == 0) {
+			if ((getTouchLEDValue(LED) && !AutonLocked) && AutonSelectLastState == 0) {
 				AutonSelectLastState = getTouchLEDValue(LED);
 				AutonProgramSelector +=1;
 				} else if (getBumperValue(AutonStart)) {
@@ -741,10 +742,12 @@ task main() { // main program code
 	point6.pY = 0;
 	point6.pA = FWD_DIR;
 	while (true) {
+		PickupBonusSequence();
+		PlaceBonusSequence();
 		while(/*timer2 < 90*/ProgramPersmissionToStart) //while the program is running do this:
 		{
-			PickupBonusSequence();
-			PlaceBonusSequence();
+		PickupBonusSequence();
+		PlaceBonusSequence();
 			//datalogging
 			/*
 			datalogDataGroupStart();
@@ -823,6 +826,8 @@ task main() { // main program code
 
 	//////////////SOAS/////////////
 	while (!ProgramPersmissionToStart && AutonSwitched) {
+		PickupBonusSequence();
+		PlaceBonusSequence();
 		while (!AutonDisplayInt) {
 			displayTextLine(0, "Auton Switched");
 			displayClearTextLine(1);
@@ -830,38 +835,59 @@ task main() { // main program code
 			displayClearTextLine(3);
 			displayClearTextLine(4);
 			displayClearTextLine(5);
+			startTask(AutonSelectControl);
 			AutonDisplayInt = true;
 		};
-		while (!ProgramPersmissionToStart && AutonSwitched) {
-			startTask(AutonSelectControl);
 
+
+		while (AutonPermissionToStart) {
+		PickupBonusSequence();
+		PlaceBonusSequence();
 			switch (AutonProgramSelector) {
+				//////////////////////////////////////////////////////////////////////////////////////////
 
 			case 0:
 				waitUntil(AutonPermissionToStart);
 				setTouchLEDColor(LED,colorGreen);
-				displayTextLine(4, "Drive 100");
+				displayTextLine(4, "Drive 100 (TEST)");
 				// Start of Auton Option 0 (Null/Test)
 				driveDistance(100);
-				delay(1000);
+				delay(3000);
 				driveDistance(-100);
 				delay(1000);
+				//////////////////////////////////////
 				setTouchLEDColor(LED,colorViolet);
 				AutonPermissionToStart = false;
+				AutonFinished = true;
 				break;
 
 			case 1:
 				waitUntil(AutonPermissionToStart);
 				setTouchLEDColor(LED,colorGreen);
-				displayTextLine(4, "Drive 200");
-				// Start of Auton Option 0 (Null/Test)
-				driveDistance(200);
-				delay(1000);
-				driveDistance(-200);
-				delay(1000);
+				displayTextLine(4, "Right Auton");
+				// Start of Auton Option 1
+
+				////////////////////////////////////////
 				setTouchLEDColor(LED,colorViolet);
 				AutonPermissionToStart = false;
+				AutonFinished = true;
 				break;
+
+			case 2:
+				waitUntil(AutonPermissionToStart);
+				setTouchLEDColor(LED,colorGreen);
+				displayTextLine(4, "Left Auton");
+				// Start of Auton Option 2
+
+				////////////////////////////////////////
+				setTouchLEDColor(LED,colorViolet);
+				AutonPermissionToStart = false;
+				AutonFinished = true;
+				break;
+
+				///end of auton entries
+				//////////////////////////////////////////////////////////////////////////////////////////////////////////
+			default: AutonProgramSelector = 0;
 			};
 		}
 		/////////////EOAS//////////////
@@ -892,7 +918,7 @@ task main() { // main program code
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //																			 				End of Code																								//
-//																		Last Known Compile: 21/07/2019, 1356																//
+//																		Last Known Compile: 19/08/2019, 1548																//
 //																			  		By Joseph Greening																					//
 //																				3428B VIQC Squared Away																					//
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
