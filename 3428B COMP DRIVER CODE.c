@@ -34,6 +34,7 @@ bool AutonDisplayInt = false;
 bool AutonPermissionToStart = false;
 bool AutonLocked = false;
 bool AutonFinished = false;
+bool PlaceSequenceFinished = false;
 
 #define   DATALOG_SERIES_0    0
 #define   DATALOG_SERIES_1    1
@@ -191,8 +192,8 @@ void driveDistance(float distance) { // function that converts mm into rotations
 	moveMotorTarget(Right, (distance/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), 80);
 };
 
-void moveMotorTargetMM (float WheelMotor, float distance2) {
-	moveMotorTarget(WheelMotor,(distance2/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), 80);
+void moveMotorTargetMM (float WheelMotor, float distance2, int speed2 = 80) {
+	moveMotorTarget(WheelMotor,(distance2/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), speed2);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //																			 				General Functions																					//
@@ -398,7 +399,7 @@ void PlaceBonusSequence () {
 
 	case 3:
 		if (P2) {
-			driveDistance(150);
+			driveDistance(220);
 			delay(1000);
 			ArmPresetValue=2;
 			ArmHeightMove();
@@ -416,7 +417,7 @@ void PlaceBonusSequence () {
 		if (P2) {
 			ReleaseCube();
 			delay(400);
-			driveDistance(-150);
+			driveDistance(-200);
 		};
 		if (getMotorZeroVelocity(Left) || (getTimerValue(T1)>3000)) {
 			PlaceBonusSequenceState = 5;
@@ -432,6 +433,7 @@ void PlaceBonusSequence () {
 		};
 		if (getMotorZeroVelocity(ArmLeft) || (getTimerValue(T1)>3000)) {
 			PlaceBonusSequenceState = 1;
+			PlaceSequenceFinished = true;
 		};
 		break;
 
@@ -869,25 +871,41 @@ task main() { // main program code
 				setTouchLEDColor(LED,colorGreen);
 				displayTextLine(4, "Right Auton");
 				// Start of Auton Option 1
-				driveDistance(50);
+				//////////////////Stage 1///////////////////////
 				ReleaseCube();
- 				delay(800);
 				//Swing Turning
-				moveMotorTargetMM(Left,100);
+				moveMotorTargetMM(Left,138);
 				delay(1000);
-				moveMotorTargetMM(Right,125);
-				delay(750);
+				moveMotorTargetMM(Right,235,50);
+				delay(1200);
 				GrabCube();
-				delay(1000);
+				delay(250);
+				driveDistance(85);
+				delay(1200);
 				ArmPresetValue = 2;
 				ArmHeightMove();
-				moveMotorTargetMM(Left,100);
+				moveMotorTargetMM(Left,97);
 				delay(1000);
 				//Forward to Sequence Preset
-				driveDistance(300);
-				delay(800);
+				driveDistance(180);
+				delay(1000);
 				//Sequence
 				PlaceBonusSequenceState = 2;
+				//////////////////Stage 2///////////////////////
+				/*delay(1000);
+				waitUntil(PlaceBonusSequenceState==1);
+				moveMotorTargetMM(Right,367,75);
+				delay(1200);
+				driveDistance(185);
+				delay(1000);
+				moveMotorTargetMM(Right,54,75);
+				delay(500);
+				GrabCube();
+				delay(500);
+				ArmPresetValue = 1;
+				ArmHeightMove();
+				delay(1000);
+				*/
 				////////////////////////////////////////
 				delay(1000);
 				setTouchLEDColor(LED,colorViolet);
