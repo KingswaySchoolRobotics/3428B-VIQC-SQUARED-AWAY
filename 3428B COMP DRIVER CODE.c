@@ -191,7 +191,10 @@ void driveDistance(float distance) { // function that converts mm into rotations
 	moveMotorTarget(Right, (distance/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), 80);
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void moveMotorTargetMM (float WheelMotor, float distance2) {
+	moveMotorTarget(WheelMotor,(distance2/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), 80);
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //																			 				General Functions																					//
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -722,13 +725,13 @@ task main() { // main program code
 	point1.pY = 100;
 	point1.pA = FWD_DIR;
 
-	point2.pX = 100;
+	point2.pX = 0;
 	point2.pY = 100;
-	point2.pA = LEFT_DIR;
+	point2.pA = FWD_DIR+45;
 
-	point3.pX = 100;
+	point3.pX = 0;
 	point3.pY = 0;
-	point3.pA = BACK_DIR;
+	point3.pA = FWD_DIR+45;
 
 	point4.pX = 0;
 	point4.pY = 0;
@@ -746,8 +749,8 @@ task main() { // main program code
 		PlaceBonusSequence();
 		while(/*timer2 < 90*/ProgramPersmissionToStart) //while the program is running do this:
 		{
-		PickupBonusSequence();
-		PlaceBonusSequence();
+			PickupBonusSequence();
+			PlaceBonusSequence();
 			//datalogging
 			/*
 			datalogDataGroupStart();
@@ -841,8 +844,8 @@ task main() { // main program code
 
 
 		while (AutonPermissionToStart) {
-		PickupBonusSequence();
-		PlaceBonusSequence();
+			PickupBonusSequence();
+			PlaceBonusSequence();
 			switch (AutonProgramSelector) {
 				//////////////////////////////////////////////////////////////////////////////////////////
 
@@ -866,8 +869,27 @@ task main() { // main program code
 				setTouchLEDColor(LED,colorGreen);
 				displayTextLine(4, "Right Auton");
 				// Start of Auton Option 1
-
+				driveDistance(50);
+				ReleaseCube();
+ 				delay(800);
+				//Swing Turning
+				moveMotorTargetMM(Left,100);
+				delay(1000);
+				moveMotorTargetMM(Right,125);
+				delay(750);
+				GrabCube();
+				delay(1000);
+				ArmPresetValue = 2;
+				ArmHeightMove();
+				moveMotorTargetMM(Left,100);
+				delay(1000);
+				//Forward to Sequence Preset
+				driveDistance(300);
+				delay(800);
+				//Sequence
+				PlaceBonusSequenceState = 2;
 				////////////////////////////////////////
+				delay(1000);
 				setTouchLEDColor(LED,colorViolet);
 				AutonPermissionToStart = false;
 				AutonFinished = true;
