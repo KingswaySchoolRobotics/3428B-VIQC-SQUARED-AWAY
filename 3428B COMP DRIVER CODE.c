@@ -802,7 +802,9 @@ task main() { // main program code
 			setMotorSpeed(Intake, (IntakeSpeed*0.75));
 			} else if (getJoystickValue(BtnEDown)) {
 			setMotorSpeed(Intake, IntakeSpeed);
-			} else if(!getJoystickValue(BtnEDown)){
+			} else if (getJoystickValue(BtnFDown)) {
+			setMotorSpeed(Intake,  -IntakeSpeed);
+		}else if (!getJoystickValue(BtnEDown)){
 			setMotorSpeed(Intake, 0);
 		};
 
