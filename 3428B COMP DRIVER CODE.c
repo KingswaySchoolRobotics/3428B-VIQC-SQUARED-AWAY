@@ -301,7 +301,7 @@ void PickupBonusSequence () {
 	};
 	switch (PickupBonusSequenceState){
 	case 1:
-		if (getJoystickValue(BtnEUp)==1) {
+		if (getJoystickValue(BtnFDown)==1) {
 			PickupBonusSequenceState = 2;
 		};
 		break;
@@ -802,7 +802,7 @@ task main() { // main program code
 			setMotorSpeed(Intake, (IntakeSpeed*0.75));
 			} else if (getJoystickValue(BtnEDown)) {
 			setMotorSpeed(Intake, IntakeSpeed);
-			} else if (getJoystickValue(BtnFDown)) {
+			} else if (getJoystickValue(BtnEUp)) {
 			setMotorSpeed(Intake,  -IntakeSpeed);
 		}else if (!getJoystickValue(BtnEDown)){
 			setMotorSpeed(Intake, 0);
