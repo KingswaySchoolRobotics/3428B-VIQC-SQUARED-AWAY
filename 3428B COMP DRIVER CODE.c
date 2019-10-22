@@ -262,6 +262,8 @@ void displayControl (int delayforscroll = 2000) {
 	};
 }
 
+
+
 void GrabCube () {
 	setMotorSpeed(CubeClaw, -100);
 	delay(500);
@@ -270,6 +272,15 @@ void GrabCube () {
 void ReleaseCube() {
 	setMotorSpeed(CubeClaw, 100);
 	delay(500);
+};
+
+void RobotReset (int resetdelay = 100) {
+	playSound(soundHeadlightsOn);
+	delay(resetdelay);
+	ReleaseCube();
+	ArmPresetValue = 0;
+	ArmHeightMove();
+	setMotorTarget(Intake, 0, 75);
 };
 
 void GyroCustomCalibration(int count = 30) {
@@ -804,7 +815,7 @@ task main() { // main program code
 			setMotorSpeed(Intake, IntakeSpeed);
 			} else if (getJoystickValue(BtnEUp)) {
 			setMotorSpeed(Intake,  -IntakeSpeed);
-		}else if (!getJoystickValue(BtnEDown)){
+			}else if (!getJoystickValue(BtnEDown)){
 			setMotorSpeed(Intake, 0);
 		};
 
@@ -892,25 +903,71 @@ task main() { // main program code
 				driveDistance(180);
 				delay(1000);
 				//Sequence
-				PlaceBonusSequenceState = 2;
+				//PlaceBonusSequenceState = 2;
+				//Sequence Alternative for Extended Run (Stage 2)
+				//2
+				ArmPresetValue=3;
+				ArmHeightMove();
+				delay(100);
+				GrabCube();
+				//3
+				driveDistance(220);
+				delay(1000);
+				ArmPresetValue=2;
+				ArmHeightMove();
+				delay(400);
+				//4
+				ReleaseCube();
+				delay(400);
+				driveDistance(-210);
+				//5
+				delay(800);
+				ArmPresetValue=0;
+				ArmHeightMove();
+				delay(800);
+				//End of Sequence Alternative
 				//////////////////Stage 2///////////////////////
-				/*delay(1000);
-				waitUntil(PlaceBonusSequenceState==1);
+				delay(100);
+				//waitUntil(PlaceBonusSequenceState==1);
 				moveMotorTargetMM(Right,367,75);
 				delay(1200);
-				driveDistance(185);
+				driveDistance(205);
 				delay(1000);
-				moveMotorTargetMM(Right,54,75);
+				moveMotorTargetMM(Right,100,75);
 				delay(500);
+				driveDistance(70);
 				GrabCube();
 				delay(500);
 				ArmPresetValue = 1;
 				ArmHeightMove();
 				delay(1000);
-				*/
+				driveDistance(195);
+				delay(500);
+				// Turn to Middle Tower
+				moveMotorTargetMM(Right,260);
+				delay(500);
+				//arm up to max
+				ArmPresetValue = 5;
+				ArmHeightMove();
+				delay(1000);
+				//drive to tower
+				driveDistance(100);
+				/*
+				delay(1200);
+				ArmPresetValue = 4;
+				ArmHeightMove();
+				delay(200);
+				ReleaseCube();
+				delay(200);
+				driveDistance(-200);
+				delay(500);
+				ArmPresetValue = 0;
+				ArmHeightMove();
+			*/
 				////////////////////////////////////////
 				delay(1000);
 				setTouchLEDColor(LED,colorViolet);
+				//RobotReset();
 				AutonPermissionToStart = false;
 				AutonFinished = true;
 				break;
