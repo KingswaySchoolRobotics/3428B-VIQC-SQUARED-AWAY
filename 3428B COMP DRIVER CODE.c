@@ -199,6 +199,9 @@ void moveMotorTargetMM (float WheelMotor, float distance2, int speed2 = 80) {
 //																			 				General Functions																					//
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void SwapDrive () {
+driveDistance(100);
+};
 
 void ArmHeightMove() { //moves the arm to the defined positions (height 0, Height1, Height2, etc) based on the variable ArmPresetValue
 	switch(ArmPresetValue) {  //moves the arm by reading the variable (ArmPresetValue)
@@ -319,17 +322,14 @@ void PickupBonusSequence () {
 
 	case 2:
 		if (P1) {
-			ArmPresetValue=3;
-			ArmHeightMove();
-			delay(800);
-			driveDistance(600);
+			driveDistance(200);
 			//debugging for accuracy
 			//delay(10000);
 			//
 			delay(500);
 		};
 		if (getMotorZeroVelocity(Left)) {
-			PickupBonusSequenceState = 3;
+			PickupBonusSequenceState = 1;
 		};
 		break;
 
@@ -762,8 +762,9 @@ task main() { // main program code
 		PlaceBonusSequence();
 		while(/*timer2 < 90*/ProgramPersmissionToStart) //while the program is running do this:
 		{
-			PickupBonusSequence();
-			PlaceBonusSequence();
+			//PickupBonusSequence();
+			//PlaceBonusSequence();
+
 			//datalogging
 			/*
 			datalogDataGroupStart();
