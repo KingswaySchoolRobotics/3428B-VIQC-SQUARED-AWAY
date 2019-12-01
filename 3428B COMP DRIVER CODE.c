@@ -1,7 +1,6 @@
 #pragma config(Sensor, port2,  ArmBottomBumper, sensorVexIQ_Touch)
 #pragma config(Sensor, port3,  Main_Gyro,      sensorVexIQ_Gyro)
 #pragma config(Sensor, port4,  LED,            sensorVexIQ_LED)
-#pragma config(Sensor, port7,  CenterColor,    sensorVexIQ_ColorGrayscale)
 #pragma config(Sensor, port8,  BallColor,      sensorVexIQ_ColorHue)
 #pragma config(Sensor, port12, AutonStart,     sensorVexIQ_Touch)
 #pragma config(Motor,  motor1,          Left,          tmotorVexIQ, PIDControl, encoder)
@@ -48,7 +47,7 @@ bool PlaceSequenceFinished = false;
 #define		diameter 63.661977236758134307553505349006
 #define 	DriveWidth 19.5 //cm  B (base line distance)
 #define 	ticksPerRev 960
-#define 	IntakeSpeed 72.5
+#define 	IntakeSpeed 100 //72.5
 #define 	Height0 0 //Floor																				\\ \.
 #define 	Height1 -300 //Travel Height															\\ \.
 #define 	Height2 -500 //Low Platform Place														   > Arm Height Presets
@@ -200,7 +199,7 @@ void moveMotorTargetMM (float WheelMotor, float distance2, int speed2 = 80) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void SwapDrive () {
-driveDistance(100);
+	driveDistance(100);
 };
 
 void ArmHeightMove() { //moves the arm to the defined positions (height 0, Height1, Height2, etc) based on the variable ArmPresetValue
@@ -452,12 +451,6 @@ void PlaceBonusSequence () {
 	};
 };
 
-void GrayscaleDetector () {
-	if (getColorGrayscale(CenterColor)<15) {
-		setTouchLEDColor(LED,colorRed);
-	}
-
-};
 void ArmReset() { // resets the arm if the bottom bumper is pressed
 	if (getBumperValue(ArmBottomBumper)==1) {
 		resetMotorEncoder(ArmLeft);
@@ -690,7 +683,6 @@ task Functions(){
 	while(true){
 		BatteryWarning();
 		ArmReset();
-		GrayscaleDetector();
 		displayControl();
 		SwitchToAutonSkills();
 		DataCollection2();
@@ -946,16 +938,15 @@ task main() { // main program code
 				delay(500);
 				// Turn to Middle Tower
 				moveMotorTargetMM(Right,260);
-				delay(500);
+				delay(750);
 				//arm up to max
-				ArmPresetValue = 5;
-				ArmHeightMove();
-				delay(1000);
-				//drive to tower
-				driveDistance(100);
-				/*
-				delay(1200);
 				ArmPresetValue = 4;
+				ArmHeightMove();
+				delay(750);
+				//drive to tower
+				driveDistance(250);
+				delay(850);
+				ArmPresetValue = 3;
 				ArmHeightMove();
 				delay(200);
 				ReleaseCube();
@@ -964,7 +955,6 @@ task main() { // main program code
 				delay(500);
 				ArmPresetValue = 0;
 				ArmHeightMove();
-			*/
 				////////////////////////////////////////
 				delay(1000);
 				setTouchLEDColor(LED,colorViolet);
@@ -980,10 +970,13 @@ task main() { // main program code
 				// Start of Auton Option 2
 
 				////////////////////////////////////////
+				delay(1000);
 				setTouchLEDColor(LED,colorViolet);
+				//RobotReset();
 				AutonPermissionToStart = false;
 				AutonFinished = true;
 				break;
+
 
 				///end of auton entries
 				//////////////////////////////////////////////////////////////////////////////////////////////////////////
