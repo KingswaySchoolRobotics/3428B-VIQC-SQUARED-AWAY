@@ -44,6 +44,7 @@ bool PlaceSequenceFinished = false;
 #define   DATALOG_SERIES_6    6
 #define   DATALOG_SERIES_7    7
 #define   DATALOG_SERIES_8    8
+#define		Turn90MM	367
 #define		diameter 63.661977236758134307553505349006
 #define 	DriveWidth 19.5 //cm  B (base line distance)
 #define 	ticksPerRev 960
@@ -926,9 +927,10 @@ task main() { // main program code
 				delay(1200);
 				driveDistance(205);
 				delay(1000);
-				moveMotorTargetMM(Right,100,75);
-				delay(500);
-				driveDistance(70);
+				moveMotorTargetMM(Right,120,75);
+				delay(1000);
+				driveDistance(100);
+				delay(50);
 				GrabCube();
 				delay(500);
 				ArmPresetValue = 1;
@@ -955,6 +957,44 @@ task main() { // main program code
 				delay(500);
 				ArmPresetValue = 0;
 				ArmHeightMove();
+				moveMotorTargetMM(Left,367, 75);
+				driveDistance(280);
+				moveMotorTargetMM(Left,97, 75);
+				delay(1200);
+				GrabCube();
+				delay(250);
+				driveDistance(85);
+				delay(1200);
+				ArmPresetValue = 2;
+				ArmHeightMove();
+				moveMotorTargetMM(Left,97+Turn90MM,75);
+				delay(1000);
+				//Forward to Sequence Preset
+				driveDistance(180);
+				delay(1000);
+				//Sequence
+				//PlaceBonusSequenceState = 2;
+				//Sequence Alternative for Extended Run (Stage 2)
+				//2
+				ArmPresetValue=3;
+				ArmHeightMove();
+				delay(100);
+				GrabCube();
+				//3
+				driveDistance(220);
+				delay(1000);
+				ArmPresetValue=2;
+				ArmHeightMove();
+				delay(400);
+				//4
+				ReleaseCube();
+				delay(400);
+				driveDistance(-210);
+				//5
+				delay(800);
+				ArmPresetValue=0;
+				ArmHeightMove();
+				delay(800);
 				////////////////////////////////////////
 				delay(1000);
 				setTouchLEDColor(LED,colorViolet);
