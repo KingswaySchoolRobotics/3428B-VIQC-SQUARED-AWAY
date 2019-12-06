@@ -888,7 +888,7 @@ task main() { // main program code
 				delay(1200);
 				GrabCube();
 				delay(250);
-				driveDistance(85);
+				driveDistance(85, drivedisttipspeed);
 				delay(1200);
 				ArmPresetValue = 2;
 				ArmHeightMove();
@@ -906,7 +906,8 @@ task main() { // main program code
 				delay(100);
 				GrabCube();
 				//3
-				driveDistance(220, drivedisttipspeed);
+				delay(1000);
+				driveDistance(210, drivedisttipspeed);
 				delay(1000);
 				ArmPresetValue=2;
 				ArmHeightMove();
@@ -914,7 +915,7 @@ task main() { // main program code
 				//4
 				ReleaseCube();
 				delay(400);
-				driveDistance(-210);
+				driveDistance(-200);
 				//5
 				delay(800);
 				ArmPresetValue=0;
@@ -928,10 +929,10 @@ task main() { // main program code
 				delay(1200);
 				driveDistance(205);
 				delay(1000);
-				moveMotorTargetMM(Right,120,75);
+				moveMotorTargetMM(Right,115,75);
 				delay(1000);
-				driveDistance(100);
-				delay(50);
+				driveDistance(120);
+				delay(100);
 				GrabCube();
 				delay(500);
 				ArmPresetValue = 1;
@@ -964,7 +965,7 @@ task main() { // main program code
 				delay(1200);
 				GrabCube();
 				delay(250);
-				driveDistance(85);
+				driveDistance(85, drivedisttipspeed);
 				delay(1200);
 				ArmPresetValue = 2;
 				ArmHeightMove();
