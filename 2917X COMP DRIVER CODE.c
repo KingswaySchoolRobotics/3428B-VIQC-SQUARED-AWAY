@@ -53,7 +53,7 @@ bool PlaceSequenceFinished = false;
 #define 	Height1 -300 //Travel Height															\\ \.
 #define 	Height2 -500 //Low Platform Place														   > Arm Height Presets
 #define		Height3 -700 //Low Platform Position / Top Platform Place // /.
-#define 	Height4 -1000 //Top Platfrom Position										// /.
+#define 	Height4 -875 //Top Platfrom Position										// /.
 //#define	 Height5 -1000; //
 #define 	FWD_DIR 0
 #define 	RIGHT_DIR 90
