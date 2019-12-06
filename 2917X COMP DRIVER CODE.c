@@ -44,6 +44,7 @@ bool PlaceSequenceFinished = false;
 #define   DATALOG_SERIES_6    6
 #define   DATALOG_SERIES_7    7
 #define   DATALOG_SERIES_8    8
+#define		drivedisttipspeed		45
 #define		Turn90MM	367
 #define		diameter 63.661977236758134307553505349006
 #define 	DriveWidth 19.5 //cm  B (base line distance)
@@ -187,9 +188,9 @@ bool TurnDegrees (float varTurnDegrees) { // turn PID function that returns true
 	return false; // returns false if it has not finished so that the sequence waits until it is finished
 };
 
-void driveDistance(float distance) { // function that converts mm into rotations / degrees so the robot can then use the built in PIDcontroller to turn that ammount
-	moveMotorTarget(Left, (distance/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), 80); // moves the motors according to the output variable from 'MoveDistanceRotations'
-	moveMotorTarget(Right, (distance/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), 80);
+void driveDistance(float distance, int drivespeed = 80) { // function that converts mm into rotations / degrees so the robot can then use the built in PIDcontroller to turn that ammount
+	moveMotorTarget(Left, (distance/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), drivespeed); // moves the motors according to the output variable from 'MoveDistanceRotations'
+	moveMotorTarget(Right, (distance/200*360*2.6666666666666666666666666666666666666666666666666666666666666666666666666666666666 /*CorrectionRatioforDrivingSequences*/), drivespeed);
 };
 
 void moveMotorTargetMM (float WheelMotor, float distance2, int speed2 = 80) {
@@ -905,7 +906,7 @@ task main() { // main program code
 				delay(100);
 				GrabCube();
 				//3
-				driveDistance(220);
+				driveDistance(220, drivedisttipspeed);
 				delay(1000);
 				ArmPresetValue=2;
 				ArmHeightMove();
@@ -981,7 +982,7 @@ task main() { // main program code
 				delay(100);
 				GrabCube();
 				//3
-				driveDistance(220);
+				driveDistance(220, drivedisttipspeed);
 				delay(1000);
 				ArmPresetValue=2;
 				ArmHeightMove();
