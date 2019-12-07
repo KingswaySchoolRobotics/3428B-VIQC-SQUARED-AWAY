@@ -938,7 +938,7 @@ task main() { // main program code
 				ArmPresetValue = 1;
 				ArmHeightMove();
 				delay(1000);
-				driveDistance(175); ////
+				driveDistance(175);
 				delay(500);
 				// Turn to Middle Tower
 				moveMotorTargetMM(Right,263,75); // need to fix deg turning
@@ -950,7 +950,7 @@ task main() { // main program code
 				ArmHeightMove(75);
 				delay(750);
 				//drive to tower
-				driveDistance(293, drivedisttipspeed-15);
+				driveDistance(295, drivedisttipspeed-15);
 				delay(2500);
 				ArmPresetValue = 3;
 				ArmHeightMove(75);
