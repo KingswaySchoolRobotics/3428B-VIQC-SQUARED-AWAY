@@ -933,7 +933,7 @@ task main() { // main program code
 				delay(1000);
 				driveDistance(110, drivedisttipspeed-10);
 				delay(110);
-				GrabCube(75);
+				GrabCube();
 				delay(500);
 				ArmPresetValue = 1;
 				ArmHeightMove();
