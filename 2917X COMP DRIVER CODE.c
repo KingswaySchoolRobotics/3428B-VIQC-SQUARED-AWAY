@@ -268,13 +268,13 @@ void displayControl (int delayforscroll = 2000) {
 
 
 
-void GrabCube () {
-	setMotorSpeed(CubeClaw, -100);
+void GrabCube (int cubeclawspeed = 100) {
+	setMotorSpeed(CubeClaw, -cubeclawspeed);
 	delay(500);
 };
 
-void ReleaseCube() {
-	setMotorSpeed(CubeClaw, 100);
+void ReleaseCube(int cubeclawspeed2 = 100) {
+	setMotorSpeed(CubeClaw, cubeclawspeed2);
 	delay(500);
 };
 
@@ -931,9 +931,9 @@ task main() { // main program code
 				delay(1000);
 				moveMotorTargetMM(Right,80,75);
 				delay(1000);
-				driveDistance(110, drivedisttipspeed);
-				delay(100);
-				GrabCube();
+				driveDistance(110, drivedisttipspeed-10);
+				delay(110);
+				GrabCube(75);
 				delay(500);
 				ArmPresetValue = 1;
 				ArmHeightMove();
