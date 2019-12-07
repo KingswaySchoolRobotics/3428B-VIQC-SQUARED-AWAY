@@ -950,7 +950,7 @@ task main() { // main program code
 				ArmHeightMove(75);
 				delay(750);
 				//drive to tower
-				driveDistance(300, drivedisttipspeed-15);
+				driveDistance(295, drivedisttipspeed-15);
 				delay(2500);
 				ArmPresetValue = 3;
 				ArmHeightMove(75);
