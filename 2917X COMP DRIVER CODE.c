@@ -964,9 +964,9 @@ task main() { // main program code
 				///////////////////////
 				moveMotorTargetMM(Left,375, 75);
 				delay(1000);
-				driveDistance(270);
+				driveDistance(260);
 				delay(1200);
-				moveMotorTargetMM(Left,107, 75);
+				moveMotorTargetMM(Left,120, 75);
 				///////////////////////
 				delay(1200);
 				driveDistance(90);
