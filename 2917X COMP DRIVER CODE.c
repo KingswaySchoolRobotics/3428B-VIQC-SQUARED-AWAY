@@ -975,7 +975,7 @@ task main() { // main program code
 				delay(1000);
 				ArmPresetValue = 2;
 				ArmHeightMove();
-				moveMotorTargetMM(Left,91);
+				moveMotorTargetMM(Left,170);
 				delay(750);
 				//Forward to Sequence Preset
 				driveDistance(180, drivedisttipspeed);
