@@ -962,15 +962,15 @@ task main() { // main program code
 				ArmPresetValue = 0;
 				ArmHeightMove();
 				///////////////////////
-				moveMotorTargetMM(Left,375, 75);
+				moveMotorTargetMM(Left,397, 75);
 				delay(1000);
-				driveDistance(260);
+				driveDistance(215);
 				delay(1200);
-				moveMotorTargetMM(Left,120, 75);
+				moveMotorTargetMM(Left,170, 75);
 				///////////////////////
 				delay(1200);
-				driveDistance(90);
-				delay(100);
+				driveDistance(110);
+				delay(200);
 				GrabCube();
 				delay(1000);
 				ArmPresetValue = 2;
