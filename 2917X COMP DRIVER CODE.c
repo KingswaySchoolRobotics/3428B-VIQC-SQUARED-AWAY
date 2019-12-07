@@ -927,22 +927,22 @@ task main() { // main program code
 				//waitUntil(PlaceBonusSequenceState==1);
 				moveMotorTargetMM(Right,367,75);
 				delay(1200);
-				driveDistance(205);
+				driveDistance(215);
 				delay(1000);
-				moveMotorTargetMM(Right,90,75);
+				moveMotorTargetMM(Right,80,75);
 				delay(1000);
-				driveDistance(120, drivedisttipspeed);
+				driveDistance(110, drivedisttipspeed);
 				delay(100);
 				GrabCube();
 				delay(500);
 				ArmPresetValue = 1;
 				ArmHeightMove();
 				delay(1000);
-				driveDistance(195);
+				driveDistance(175);
 				delay(500);
 				// Turn to Middle Tower
-				moveMotorTargetMM(Right,263);
-				delay(1000);
+				moveMotorTargetMM(Right,263,75); // need to fix deg turning
+				delay(1750);
 				driveDistance(-50, drivedisttipspeed);
 				delay(1000);
 				//arm up to max
@@ -950,8 +950,8 @@ task main() { // main program code
 				ArmHeightMove(75);
 				delay(750);
 				//drive to tower
-				driveDistance(300, drivedisttipspeed);
-				delay(1100);
+				driveDistance(300, drivedisttipspeed-15);
+				delay(2500);
 				ArmPresetValue = 3;
 				ArmHeightMove(75);
 				delay(200);
