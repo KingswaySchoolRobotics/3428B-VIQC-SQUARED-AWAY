@@ -884,19 +884,19 @@ task main() { // main program code
 				//Swing Turning
 				moveMotorTargetMM(Left,138);
 				delay(1000);
-				moveMotorTargetMM(Right,235,50);
-				delay(1200);
+				moveMotorTargetMM(Right,220,50);
+				delay(1100);
 				GrabCube();
 				delay(250);
-				driveDistance(85, drivedisttipspeed);
+				driveDistance(90, drivedisttipspeed);
 				delay(1200);
 				ArmPresetValue = 2;
 				ArmHeightMove();
-				moveMotorTargetMM(Left,97);
-				delay(1000);
+				moveMotorTargetMM(Left,91);
+				delay(750);
 				//Forward to Sequence Preset
-				driveDistance(180);
-				delay(1000);
+				driveDistance(180, drivedisttipspeed);
+				delay(750); // might need to change back to 1000 ms
 				//Sequence
 				//PlaceBonusSequenceState = 2;
 				//Sequence Alternative for Extended Run (Stage 2)
@@ -942,13 +942,15 @@ task main() { // main program code
 				delay(500);
 				// Turn to Middle Tower
 				moveMotorTargetMM(Right,260);
-				delay(750);
+				delay(1000);
+				driveDistance(-50);
+				delay(1000);
 				//arm up to max
 				ArmPresetValue = 4;
 				ArmHeightMove();
 				delay(750);
 				//drive to tower
-				driveDistance(250);
+				driveDistance(300, drivedisttipspeed);
 				delay(850);
 				ArmPresetValue = 3;
 				ArmHeightMove();
