@@ -204,35 +204,35 @@ void SwapDrive () {
 	driveDistance(100);
 };
 
-void ArmHeightMove() { //moves the arm to the defined positions (height 0, Height1, Height2, etc) based on the variable ArmPresetValue
+void ArmHeightMove(int armheightmovespeed = 100) { //moves the arm to the defined positions (height 0, Height1, Height2, etc) based on the variable ArmPresetValue
 	switch(ArmPresetValue) {  //moves the arm by reading the variable (ArmPresetValue)
 	case 0://Floor
-		setMotorTarget(ArmLeft, Height0, 100);
-		setMotorTarget(ArmRight, Height0, 100);
+		setMotorTarget(ArmLeft, Height0, armheightmovespeed);
+		setMotorTarget(ArmRight, Height0, armheightmovespeed);
 		setTouchLEDColor(LED,colorOrange);
 		break;
 
 	case 1://
-		setMotorTarget(ArmLeft, Height1, 100);
-		setMotorTarget(ArmRight, Height1, 100);
+		setMotorTarget(ArmLeft, Height1, armheightmovespeed);
+		setMotorTarget(ArmRight, Height1, armheightmovespeed);
 		setTouchLEDColor(LED,colorOrange);
 		break;
 
 	case 2://
-		setMotorTarget(ArmLeft, Height2, 100);
-		setMotorTarget(ArmRight, Height2, 100);
+		setMotorTarget(ArmLeft, Height2, armheightmovespeed);
+		setMotorTarget(ArmRight, Height2, armheightmovespeed);
 		setTouchLEDColor(LED,colorOrange);
 		break;
 
 	case 3://Static Height / Moving height for balance
-		setMotorTarget(ArmLeft, Height3, 100);
-		setMotorTarget(ArmRight, Height3, 100);
+		setMotorTarget(ArmLeft, Height3, armheightmovespeed);
+		setMotorTarget(ArmRight, Height3, armheightmovespeed);
 		setTouchLEDColor(LED,colorOrange);
 		break;
 
 	case 4://
-		setMotorTarget(ArmLeft, Height4, 100);
-		setMotorTarget(ArmRight, Height4, 100);
+		setMotorTarget(ArmLeft, Height4, armheightmovespeed);
+		setMotorTarget(ArmRight, Height4, armheightmovespeed);
 		setTouchLEDColor(LED,colorOrange);
 		break;
 
@@ -892,11 +892,11 @@ task main() { // main program code
 				delay(1200);
 				ArmPresetValue = 2;
 				ArmHeightMove();
-				moveMotorTargetMM(Left,91);
+				moveMotorTargetMM(Left,82);
 				delay(750);
 				//Forward to Sequence Preset
 				driveDistance(180, drivedisttipspeed);
-				delay(750); // might need to change back to 1000 ms
+				delay(750); // might need to change back to 1000
 				//Sequence
 				//PlaceBonusSequenceState = 2;
 				//Sequence Alternative for Extended Run (Stage 2)
@@ -929,9 +929,9 @@ task main() { // main program code
 				delay(1200);
 				driveDistance(205);
 				delay(1000);
-				moveMotorTargetMM(Right,115,75);
+				moveMotorTargetMM(Right,90,75);
 				delay(1000);
-				driveDistance(120);
+				driveDistance(120, drivedisttipspeed);
 				delay(100);
 				GrabCube();
 				delay(500);
@@ -941,19 +941,19 @@ task main() { // main program code
 				driveDistance(195);
 				delay(500);
 				// Turn to Middle Tower
-				moveMotorTargetMM(Right,260);
+				moveMotorTargetMM(Right,263);
 				delay(1000);
-				driveDistance(-50);
+				driveDistance(-50, drivedisttipspeed);
 				delay(1000);
 				//arm up to max
 				ArmPresetValue = 4;
-				ArmHeightMove();
+				ArmHeightMove(75);
 				delay(750);
 				//drive to tower
 				driveDistance(300, drivedisttipspeed);
-				delay(850);
+				delay(1100);
 				ArmPresetValue = 3;
-				ArmHeightMove();
+				ArmHeightMove(75);
 				delay(200);
 				ReleaseCube();
 				delay(200);
@@ -961,21 +961,25 @@ task main() { // main program code
 				delay(500);
 				ArmPresetValue = 0;
 				ArmHeightMove();
+				///////////////////////
 				moveMotorTargetMM(Left,367, 75);
+				delay(1000);
 				driveDistance(280);
+				delay(1200);
 				moveMotorTargetMM(Left,97, 75);
+				///////////////////////
 				delay(1200);
 				GrabCube();
 				delay(250);
-				driveDistance(85, drivedisttipspeed);
+				driveDistance(90, drivedisttipspeed);
 				delay(1200);
 				ArmPresetValue = 2;
 				ArmHeightMove();
-				moveMotorTargetMM(Left,97+Turn90MM,75);
-				delay(1000);
+				moveMotorTargetMM(Left,91);
+				delay(750);
 				//Forward to Sequence Preset
-				driveDistance(180);
-				delay(1000);
+				driveDistance(180, drivedisttipspeed);
+				delay(750); // might need to change back to 1000
 				//Sequence
 				//PlaceBonusSequenceState = 2;
 				//Sequence Alternative for Extended Run (Stage 2)
@@ -985,7 +989,8 @@ task main() { // main program code
 				delay(100);
 				GrabCube();
 				//3
-				driveDistance(220, drivedisttipspeed);
+				delay(1000);
+				driveDistance(210, drivedisttipspeed);
 				delay(1000);
 				ArmPresetValue=2;
 				ArmHeightMove();
@@ -993,12 +998,13 @@ task main() { // main program code
 				//4
 				ReleaseCube();
 				delay(400);
-				driveDistance(-210);
+				driveDistance(-200);
 				//5
 				delay(800);
 				ArmPresetValue=0;
 				ArmHeightMove();
 				delay(800);
+				//End of Sequence Alternative
 				////////////////////////////////////////
 				delay(1000);
 				setTouchLEDColor(LED,colorViolet);
