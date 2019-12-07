@@ -962,7 +962,7 @@ task main() { // main program code
 				ArmPresetValue = 0;
 				ArmHeightMove();
 				///////////////////////
-				moveMotorTargetMM(Left,367, 75);
+				moveMotorTargetMM(Left,375, 75);
 				delay(1000);
 				driveDistance(270);
 				delay(1200);
