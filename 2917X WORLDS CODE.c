@@ -21,6 +21,7 @@
 //																			 				Variables																									//
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool boot = false;
+bool intakeStarted;
 
 #define   DATALOG_SERIES_0    0
 #define   DATALOG_SERIES_1    1
@@ -31,6 +32,8 @@ bool boot = false;
 #define   DATALOG_SERIES_6    6
 #define   DATALOG_SERIES_7    7
 #define   DATALOG_SERIES_8    8
+
+#define		IntakeSpeed		100
 
 int   global_1 = 0;
 int   global_2 = 0;
@@ -207,7 +210,7 @@ task bootup() {
 	load();
 	setMotorBrakeMode(Left, motorHold);
 	setMotorBrakeMode(Intake, motorHold);
-	setMotorBrakeMode(BallRelease, motorHold);
+	setMotorBrakeMode(BallRelease, motorCoast);
 	setMotorBrakeMode(BallLift, motorHold);
 	setMotorBrakeMode(IntakeLift, motorHold);
 	setMotorBrakeMode(Right, motorHold);
@@ -219,7 +222,7 @@ task bootup() {
 	resetMotorEncoder(Right);
 	displayTextLine(1,"		Calibrating Gyro");
 	load();
-	//GyroCustomCalibration(30); // removed for testing
+	GyroCustomCalibration(30);
 	delay(10);
 	displayTextLine(1,"		Starting Tasks");
 	load();
@@ -236,9 +239,11 @@ task bootup() {
 		if (getJoystickValue(ChA)>80) {
 			delay(250);
 			activate();
+			setMotorBrakeMode(BallRelease, motorHold);
+			resetMotorEncoder(BallRelease);
 			} else {
 			displayTextLine(0,"");
-			displayTextLine(1,"");
+			displayTextLine(1," Check Ball Release");
 			displayTextLine(2,"  Move ChA Joystick");
 			displayTextLine(3,"	    to continue");
 			displayTextLine(4,"");
@@ -266,7 +271,16 @@ task main() { // main program code
 			setMotorSpeed(Right, 0); // if nothing is happening on the controller set the motor speed to 0
 		};
 		// Intake
-
+		if (!intakeStarted) {
+			waitUntil(getJoystickValue(BtnFUp));
+			intakeStarted = true;
+		}
+		else if (!getJoystickValue(BtnFUp)) {
+			setMotorSpeed(Intake, 100);
+			} else if(getJoystickValue(BtnFUp)){
+			setMotorSpeed(Intake, -100);
+		};
+		// Ball Release
 
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
