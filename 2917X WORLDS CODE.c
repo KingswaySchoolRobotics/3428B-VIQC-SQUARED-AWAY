@@ -23,6 +23,8 @@
 bool boot = false;
 bool intakeStarted;
 bool BallReleased = false;
+bool BatteryWarnTrig = false;
+bool BallLiftToggle = false;
 
 #define   DATALOG_SERIES_0    0
 #define   DATALOG_SERIES_1    1
@@ -57,27 +59,30 @@ long gyroError;
 
 task Battery() {
 	while (true) {
-	if (nImmediateBatteryLevel<MinimumVoltage) {
-		delay(WarningDelay);
-		playRepetitiveSound(soundCarAlarm4, 100);
-		setTouchLEDColor(LED, colorRed);
-		setTouchLEDBlinkTime(LED, 2, 1);
-		if (nImmediateBatteryLevel<5500) {
-			boot = false;
-			stopAllTasks();
-			stopAllMotors();
+		if (nImmediateBatteryLevel<MinimumVoltage) {
+			delay(WarningDelay);
+			playRepetitiveSound(soundCarAlarm4, 100);
+			setTouchLEDColor(LED, colorRed);
+			setTouchLEDBlinkTime(LED, 2, 1);
+			if (nImmediateBatteryLevel<5500) {
+				boot = false;
+				stopAllTasks();
+				stopAllMotors();
+			};
+			} else if (nImmediateBatteryLevel<WarningVoltage && !BatteryWarnTrig) {
+			delay(WarningDelay);
+			playSound(soundHeadlightsOff);
+			setTouchLEDColor(LED, colorOrange);
+			setTouchLEDBlinkTime(LED, 2, 1);
+			BatteryWarnTrig = true;
+			sleep(3000);
+			setTouchLEDBlinkTime(LED, 0, 0);
+			}else if (nImmediateBatteryLevel>SafeVoltage) {
+			delay(WarningDelay);
+			playRepetitiveSound(soundWrongWay, 100);
+			setTouchLEDColor(LED, colorRed);
+			setTouchLEDBlinkTime(LED, 2, 1);
 		};
-		} else if (nImmediateBatteryLevel<WarningVoltage) {
-		delay(WarningDelay);
-		playSound(soundCarAlarm2);
-		setTouchLEDColor(LED, colorOrange);
-		setTouchLEDBlinkTime(LED, 2, 1);
-		}else if (nImmediateBatteryLevel>SafeVoltage) {
-		delay(WarningDelay);
-		playRepetitiveSound(soundWrongWay, 100);
-		setTouchLEDColor(LED, colorRed);
-		setTouchLEDBlinkTime(LED, 2, 1);
-	};
 	};
 };
 
@@ -93,41 +98,41 @@ void GyroCustomCalibration(int count = 30) {
 };
 /*
 task DataCollection (){
-	int loops = 0;
-	datalogClear();
-	while(true){
-		global_1 = getGyroHeading(Main_Gyro); //series 1
-		global_2 = gyroValue; // 2
-		global_3 = gyroError; // 3
-		global_4 =  //4
-		global_5 = getMotorSpeed(Right); //5
-		global_6 = getMotorSpeed(Left); //6
-		global_7 =  //7
-		global_8 =  //8
+int loops = 0;
+datalogClear();
+while(true){
+global_1 = getGyroHeading(Main_Gyro); //series 1
+global_2 = gyroValue; // 2
+global_3 = gyroError; // 3
+global_4 =  //4
+global_5 = getMotorSpeed(Right); //5
+global_6 = getMotorSpeed(Left); //6
+global_7 =  //7
+global_8 =  //8
 
-		datalogDataGroupStart();
-		datalogAddValue( DATALOG_SERIES_0, global_1 );
-		datalogAddValue( DATALOG_SERIES_1, global_2 );
-		datalogAddValue( DATALOG_SERIES_2, global_3 );
-		datalogAddValue( DATALOG_SERIES_3, global_4 );
-		datalogAddValue( DATALOG_SERIES_4, global_5 );
-		datalogAddValue( DATALOG_SERIES_5, global_6 );
-		datalogAddValue( DATALOG_SERIES_6, global_7 );
-		datalogAddValue( DATALOG_SERIES_7, global_8 );
-		datalogDataGroupEnd();
+datalogDataGroupStart();
+datalogAddValue( DATALOG_SERIES_0, global_1 );
+datalogAddValue( DATALOG_SERIES_1, global_2 );
+datalogAddValue( DATALOG_SERIES_2, global_3 );
+datalogAddValue( DATALOG_SERIES_3, global_4 );
+datalogAddValue( DATALOG_SERIES_4, global_5 );
+datalogAddValue( DATALOG_SERIES_5, global_6 );
+datalogAddValue( DATALOG_SERIES_6, global_7 );
+datalogAddValue( DATALOG_SERIES_7, global_8 );
+datalogDataGroupEnd();
 
-		wait1Msec(10);
-		datalogAddValueWithTimeStamp( DATALOG_SERIES_3, global_3++ );
-		wait1Msec(10);
-		datalogAddValueWithTimeStamp( DATALOG_SERIES_3, global_3++ );
+wait1Msec(10);
+datalogAddValueWithTimeStamp( DATALOG_SERIES_3, global_3++ );
+wait1Msec(10);
+datalogAddValueWithTimeStamp( DATALOG_SERIES_3, global_3++ );
 
-		// Repeat sequence every 360 loops
-		if(loops++ == 360)
-			loops = 0;
+// Repeat sequence every 360 loops
+if(loops++ == 360)
+loops = 0;
 
-		// loop delay
-		wait1Msec(10);
-	}
+// loop delay
+wait1Msec(10);
+}
 }
 */
 task gyroTask() {
@@ -167,7 +172,7 @@ task displayControl () {
 
 };
 
-void load(int screenrate = 100) {
+void load(int screenrate = 60) {
 	delay(screenrate);	displayTextLine(3,"/");
 	delay(screenrate);	displayTextLine(3,"//");
 	delay(screenrate);	displayTextLine(3,"///");
@@ -225,7 +230,7 @@ task bootup() {
 	resetMotorEncoder(Right);
 	displayTextLine(1,"		Calibrating Gyro");
 	load();
-	GyroCustomCalibration(30);
+	//GyroCustomCalibration(30);
 	delay(10);
 	displayTextLine(1,"		Starting Tasks");
 	load();
@@ -241,9 +246,9 @@ task bootup() {
 	while(!boot) {
 		if (getJoystickValue(ChA)>80) {
 			delay(250);
-			activate();
 			setMotorBrakeMode(BallRelease, motorHold);
 			resetMotorEncoder(BallRelease);
+			activate();
 			} else {
 			displayTextLine(0,"");
 			displayTextLine(1," Check Ball Release");
@@ -268,11 +273,12 @@ task main() { // main program code
 	playSound(soundTada);
 	setTouchLEDBlinkTime(LED, 0, 0);
 	stopTask(bootup);
+	setTouchLEDColor(LED, colorGreen);
 	while(boot)
 	{
-		setTouchLEDColor(LED, colorGreen);
 		// Drive
 		if (abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {
+			setTouchLEDColor(LED, colorGreen);
 			setMotorSpeed(Left, getJoystickValue(ChA)); //set the value of the motor to the value of the controller joystick
 			setMotorSpeed(Right, getJoystickValue(ChD)); //set the value of the motor to the value of the controller joystick
 			} else {
@@ -288,6 +294,8 @@ task main() { // main program code
 			setMotorSpeed(Intake, 100);
 			} else if(getJoystickValue(BtnFUp) && intakeStarted){
 			setMotorSpeed(Intake, -100);
+			setTouchLEDColor(LED, colorGreen);
+
 		};
 		// Ball Release
 		if(!getMotorMoving(BallRelease)) {
@@ -303,7 +311,20 @@ task main() { // main program code
 				sleep(100);
 			}
 		}
-		//
+		// Ball Lift
+		if(!getMotorMoving(BallLift)) {
+			if (getJoystickValue(BtnLDown) && !BallLiftToggle) {
+				setMotorTarget(BallLift,-90,67);
+				BallLiftToggle = true;
+				setTouchLEDColor(LED, colorBlue);
+				sleep(100);
+				} else if (getJoystickValue(BtnLDown) && BallLiftToggle) {
+				setMotorTarget(BallLift,0,67);
+				BallLiftToggle = false;
+				setTouchLEDColor(LED, colorBlue);
+				sleep(100);
+			}
+		}
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	};                                                                                                      //
