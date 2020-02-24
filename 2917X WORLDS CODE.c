@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool boot = false;
 bool intakeStarted;
+bool BallReleased = false;
 
 #define   DATALOG_SERIES_0    0
 #define   DATALOG_SERIES_1    1
@@ -256,8 +257,9 @@ task bootup() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 task main() { // main program code
-	startTask(bootup);
-	waitUntil(boot);
+	//startTask(bootup);
+	//waitUntil(boot);
+	activate();
 	playSound(soundTada);
 	stopTask(bootup);
 	while(boot)
@@ -271,17 +273,28 @@ task main() { // main program code
 			setMotorSpeed(Right, 0); // if nothing is happening on the controller set the motor speed to 0
 		};
 		// Intake
-		if (!intakeStarted) {
-			waitUntil(getJoystickValue(BtnFUp));
+		if (!intakeStarted && getJoystickValue(BtnFUp)) {
+			//waitUntil();
 			intakeStarted = true;
 		}
-		else if (!getJoystickValue(BtnFUp)) {
+		else if (!getJoystickValue(BtnFUp) && intakeStarted) {
 			setMotorSpeed(Intake, 100);
-			} else if(getJoystickValue(BtnFUp)){
+			} else if(getJoystickValue(BtnFUp) && intakeStarted){
 			setMotorSpeed(Intake, -100);
 		};
 		// Ball Release
-
+		if(!getMotorMoving(BallRelease)) {
+			if (getJoystickValue(BtnLUp) && !BallReleased) {
+				setMotorTarget(BallRelease,180,67);
+				BallReleased = true;
+				sleep(100);
+				} else if (getJoystickValue(BtnLUp) && BallReleased) {
+				setMotorTarget(BallRelease,0,67);
+				BallReleased = false;
+				sleep(100);
+			}
+		}
+		//
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	};                                                                                                      //
