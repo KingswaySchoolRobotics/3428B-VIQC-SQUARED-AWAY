@@ -36,6 +36,12 @@ bool BallReleased = false;
 
 #define		IntakeSpeed		100
 
+#define		MinimumVoltage		6500
+#define		WarningVoltage		7000
+#define		SafeVoltage		8500
+#define		WarningDelay		0
+
+/*
 int   global_1 = 0;
 int   global_2 = 0;
 int   global_3 = 0;
@@ -44,16 +50,18 @@ int   global_5 = 0;
 int   global_6 = 0;
 int   global_7 = 0;
 int   global_8 = 0;
+*/
 
 long gyroValue;
 long gyroError;
 
-bool BatteryWarning(int MinimumVoltage = 6500, int WarningVoltage = 7000, int SafeVoltage = 8500, int WarningDelay = 0) {
+task Battery() {
+	while (true) {
 	if (nImmediateBatteryLevel<MinimumVoltage) {
 		delay(WarningDelay);
 		playRepetitiveSound(soundCarAlarm4, 100);
 		setTouchLEDColor(LED, colorRed);
-		return true;
+		setTouchLEDBlinkTime(LED, 2, 1);
 		if (nImmediateBatteryLevel<5500) {
 			boot = false;
 			stopAllTasks();
@@ -63,14 +71,13 @@ bool BatteryWarning(int MinimumVoltage = 6500, int WarningVoltage = 7000, int Sa
 		delay(WarningDelay);
 		playSound(soundCarAlarm2);
 		setTouchLEDColor(LED, colorOrange);
-		return false;
+		setTouchLEDBlinkTime(LED, 2, 1);
 		}else if (nImmediateBatteryLevel>SafeVoltage) {
 		delay(WarningDelay);
 		playRepetitiveSound(soundWrongWay, 100);
 		setTouchLEDColor(LED, colorRed);
-		return false;
-		} else {
-		return false;
+		setTouchLEDBlinkTime(LED, 2, 1);
+	};
 	};
 };
 
@@ -84,8 +91,8 @@ void GyroCustomCalibration(int count = 30) {
 		wait1Msec(100);
 	} resetGyro(Main_Gyro);
 };
-
-void DataCollection (){
+/*
+task DataCollection (){
 	int loops = 0;
 	datalogClear();
 	while(true){
@@ -122,7 +129,7 @@ void DataCollection (){
 		wait1Msec(10);
 	}
 }
-
+*/
 task gyroTask() {
 	long velocity;
 	long angle, lastAngle;
@@ -159,13 +166,6 @@ task displayControl () {
 	};
 
 };
-
-task Functions(){
-	while(true){
-		BatteryWarning();
-		DataCollection();
-	}
-}
 
 void load(int screenrate = 100) {
 	delay(screenrate);	displayTextLine(3,"/");
@@ -208,6 +208,8 @@ void activate() {
 task bootup() {
 	displayTextLine(0,"		2917X Worlds Code");
 	displayTextLine(1,"		Setting Up Motors");
+	setTouchLEDColor(LED, colorYellow);
+
 	load();
 	setMotorBrakeMode(Left, motorHold);
 	setMotorBrakeMode(Intake, motorHold);
@@ -227,7 +229,6 @@ task bootup() {
 	delay(10);
 	displayTextLine(1,"		Starting Tasks");
 	load();
-	startTask(Functions);
 	startTask(gyroTask);
 	displayTextLine(0,"");
 	displayTextLine(1,"");
@@ -236,6 +237,7 @@ task bootup() {
 	displayTextLine(4,"");
 	startTask(displayControl);
 	playSound(soundGasFillup);
+	setTouchLEDBlinkTime(LED, 2, 2);
 	while(!boot) {
 		if (getJoystickValue(ChA)>80) {
 			delay(250);
@@ -257,13 +259,18 @@ task bootup() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 task main() { // main program code
-	//startTask(bootup);
-	//waitUntil(boot);
-	activate();
+	setTouchLEDColor(LED, colorRed);
+	startTask(Battery);
+	sleep(500);
+	startTask(bootup); //
+	waitUntil(boot);	 //
+	//activate();      //
 	playSound(soundTada);
+	setTouchLEDBlinkTime(LED, 0, 0);
 	stopTask(bootup);
 	while(boot)
 	{
+		setTouchLEDColor(LED, colorGreen);
 		// Drive
 		if (abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {
 			setMotorSpeed(Left, getJoystickValue(ChA)); //set the value of the motor to the value of the controller joystick
@@ -287,10 +294,12 @@ task main() { // main program code
 			if (getJoystickValue(BtnLUp) && !BallReleased) {
 				setMotorTarget(BallRelease,180,67);
 				BallReleased = true;
+				setTouchLEDColor(LED, colorBlue);
 				sleep(100);
 				} else if (getJoystickValue(BtnLUp) && BallReleased) {
 				setMotorTarget(BallRelease,0,67);
 				BallReleased = false;
+				setTouchLEDColor(LED, colorBlue);
 				sleep(100);
 			}
 		}
