@@ -217,10 +217,10 @@ task bootup() {
 
 	load();
 	setMotorBrakeMode(Left, motorHold);
-	setMotorBrakeMode(Intake, motorHold);
+	setMotorBrakeMode(Intake, motorCoast);
 	setMotorBrakeMode(BallRelease, motorCoast);
-	setMotorBrakeMode(BallLift, motorHold);
-	setMotorBrakeMode(IntakeLift, motorHold);
+	setMotorBrakeMode(BallLift, motorCoast);
+	setMotorBrakeMode(IntakeLift, motorCoast);
 	setMotorBrakeMode(Right, motorHold);
 	resetMotorEncoder(Left);
 	resetMotorEncoder(Intake);
@@ -246,12 +246,19 @@ task bootup() {
 	while(!boot) {
 		if (getJoystickValue(ChA)>80) {
 			delay(250);
+			setMotorBrakeMode(Intake, motorHold);
 			setMotorBrakeMode(BallRelease, motorHold);
+			setMotorBrakeMode(BallLift, motorHold);
+			setMotorBrakeMode(IntakeLift, motorHold);
+			resetMotorEncoder(Intake);
 			resetMotorEncoder(BallRelease);
+			resetMotorEncoder(BallLift);
+			resetMotorEncoder(IntakeLift);
+
 			activate();
 			} else {
 			displayTextLine(0,"");
-			displayTextLine(1," Check Ball Release");
+			displayTextLine(1,"  Check Mechanisims ");
 			displayTextLine(2,"  Move ChA Joystick");
 			displayTextLine(3,"	    to continue");
 			displayTextLine(4,"");
@@ -289,14 +296,18 @@ task main() { // main program code
 		if (!intakeStarted && getJoystickValue(BtnFUp)) {
 			//waitUntil();
 			intakeStarted = true;
-		}
-		else if (!getJoystickValue(BtnFUp) && intakeStarted) {
+			} else if (!getJoystickValue(BtnFUp) && intakeStarted) {
 			setMotorSpeed(Intake, 100);
 			} else if(getJoystickValue(BtnFUp) && intakeStarted){
 			setMotorSpeed(Intake, -100);
 			setTouchLEDColor(LED, colorGreen);
-
 		};
+		if (getJoystickValue(BtnEUp) && intakeStarted) {
+			intakeStarted = false;
+			setMotorSpeed(Intake, 0);
+			sleep(250);
+		};
+
 		// Ball Release
 		if(!getMotorMoving(BallRelease)) {
 			if (getJoystickValue(BtnLUp) && !BallReleased) {
@@ -325,7 +336,14 @@ task main() { // main program code
 				sleep(100);
 			}
 		}
-
+		// Intake Lift
+		if (getJoystickValue(BtnRUp)) {
+			setMotorSpeed(IntakeLift, 80);
+			} else if (getJoystickValue(BtnRDown)) {
+			setMotorSpeed(IntakeLift, -80);
+			} else {
+			setMotorSpeed(IntakeLift, 0);
+		};
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	};                                                                                                      //
 };																								                                                        //
