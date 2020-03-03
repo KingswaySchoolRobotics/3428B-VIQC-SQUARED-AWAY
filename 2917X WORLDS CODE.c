@@ -54,6 +54,8 @@ int   global_7 = 0;
 int   global_8 = 0;
 */
 
+int DriveFront = 0;
+
 long gyroValue;
 long gyroError;
 
@@ -230,7 +232,7 @@ task bootup() {
 	resetMotorEncoder(Right);
 	displayTextLine(1,"		Calibrating Gyro");
 	load();
-	//GyroCustomCalibration(30);
+	GyroCustomCalibration(30);
 	delay(10);
 	displayTextLine(1,"		Starting Tasks");
 	load();
@@ -283,16 +285,46 @@ task main() { // main program code
 	setTouchLEDColor(LED, colorGreen);
 	while(boot)
 	{
-		// Drive
-		if (abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {
-			setTouchLEDColor(LED, colorGreen);
-			setMotorSpeed(Left, getJoystickValue(ChA)); //set the value of the motor to the value of the controller joystick
-			setMotorSpeed(Right, getJoystickValue(ChD)); //set the value of the motor to the value of the controller joystick
-			} else {
-			setMotorSpeed(Left, 0);	// if nothing is happening on the controller set the motor speed to 0
-			setMotorSpeed(Right, 0); // if nothing is happening on the controller set the motor speed to 0
+		// Drive Switch
+		switch (DriveFront) {
+
+		//Drive Side Ball
+		case 1:
+			if (abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {
+				setTouchLEDColor(LED, colorGreen);
+				setMotorSpeed(Left, getJoystickValue(ChA)); //set the value of the motor to the value of the controller joystick
+				setMotorSpeed(Right, getJoystickValue(ChD)); //set the value of the motor to the value of the controller joystick
+				} else {
+				setMotorSpeed(Left, 0);	// if nothing is happening on the controller set the motor speed to 0
+				setMotorSpeed(Right, 0); // if nothing is happening on the controller set the motor speed to 0
+			};
+			break;
+
+			//Drive Side Intake
+		case 0:
+			if (abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {
+				setTouchLEDColor(LED, colorGreen);
+				setMotorSpeed(Right, -getJoystickValue(ChA)); //set the value of the motor to the value of the controller joystick
+				setMotorSpeed(Left, -getJoystickValue(ChD)); //set the value of the motor to the value of the controller joystick
+				} else {
+				setMotorSpeed(Left, 0);	// if nothing is happening on the controller set the motor speed to 0
+				setMotorSpeed(Right, 0); // if nothing is happening on the controller set the motor speed to 0
+			};
+			break;
+
+		default: DriveFront = 0;
+
 		};
-		// Intake
+
+		if (getJoystickValue(BtnEUp) && DriveFront == 1) {
+		DriveFront = 0;
+		sleep(250);
+	} else if (getJoystickValue(BtnEUp) && DriveFront == 0) {
+		DriveFront = 1;
+		sleep(250);
+	};
+
+		// Intake Start & Control
 		if (!intakeStarted && getJoystickValue(BtnFUp)) {
 			//waitUntil();
 			intakeStarted = true;
@@ -302,7 +334,9 @@ task main() { // main program code
 			setMotorSpeed(Intake, -100);
 			setTouchLEDColor(LED, colorGreen);
 		};
-		if (getJoystickValue(BtnEUp) && intakeStarted) {
+
+		// Stop Intake
+		if (getJoystickValue(BtnFDown) && intakeStarted) {
 			intakeStarted = false;
 			setMotorSpeed(Intake, 0);
 			sleep(250);
@@ -320,8 +354,9 @@ task main() { // main program code
 				BallReleased = false;
 				setTouchLEDColor(LED, colorBlue);
 				sleep(100);
-			}
-		}
+			};
+		};
+
 		// Ball Lift
 		if(!getMotorMoving(BallLift)) {
 			if (getJoystickValue(BtnLDown) && !BallLiftToggle) {
@@ -334,8 +369,9 @@ task main() { // main program code
 				BallLiftToggle = false;
 				setTouchLEDColor(LED, colorBlue);
 				sleep(100);
-			}
-		}
+			};
+		};
+
 		// Intake Lift
 		if (getJoystickValue(BtnRUp)) {
 			setMotorSpeed(IntakeLift, 80);
@@ -344,6 +380,7 @@ task main() { // main program code
 			} else {
 			setMotorSpeed(IntakeLift, 0);
 		};
+
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	};                                                                                                      //
 };																								                                                        //
