@@ -25,6 +25,7 @@ bool intakeStarted;
 bool BallReleased = false;
 bool BatteryWarnTrig = false;
 bool BallLiftToggle = false;
+bool FifthBall = false;
 
 #define   DATALOG_SERIES_0    0
 #define   DATALOG_SERIES_1    1
@@ -35,6 +36,7 @@ bool BallLiftToggle = false;
 #define   DATALOG_SERIES_6    6
 #define   DATALOG_SERIES_7    7
 #define   DATALOG_SERIES_8    8
+#define		DriveRatio		(4.0/3.0)
 
 #define		IntakeSpeed		100
 
@@ -98,6 +100,12 @@ void GyroCustomCalibration(int count = 30) {
 		wait1Msec(100);
 	} resetGyro(Main_Gyro);
 };
+
+void driveDistance(float distance, int drivespeed = 80) { // function that converts mm into rotations / degrees so the robot can then use the built in PIDcontroller to turn that ammount
+	moveMotorTarget(Left, ((distance/200*360) / DriveRatio), drivespeed); // moves the motors according to the output variable from 'MoveDistanceRotations'
+	moveMotorTarget(Right, ((distance/200*360) / DriveRatio), drivespeed);
+};
+
 /*
 task DataCollection (){
 int loops = 0;
@@ -288,7 +296,7 @@ task main() { // main program code
 		// Drive Switch
 		switch (DriveFront) {
 
-		//Drive Side Ball
+			//Drive Side Ball
 		case 1:
 			if (abs(getJoystickValue(ChA))>25 || abs(getJoystickValue(ChD))>25) {
 				setTouchLEDColor(LED, colorGreen);
@@ -317,12 +325,12 @@ task main() { // main program code
 		};
 
 		if (getJoystickValue(BtnEUp) && DriveFront == 1) {
-		DriveFront = 0;
-		sleep(250);
-	} else if (getJoystickValue(BtnEUp) && DriveFront == 0) {
-		DriveFront = 1;
-		sleep(250);
-	};
+			DriveFront = 0;
+			sleep(250);
+			} else if (getJoystickValue(BtnEUp) && DriveFront == 0) {
+			DriveFront = 1;
+			sleep(250);
+		};
 
 		// Intake Start & Control
 		if (!intakeStarted && getJoystickValue(BtnFUp)) {
@@ -355,6 +363,27 @@ task main() { // main program code
 				setTouchLEDColor(LED, colorBlue);
 				sleep(100);
 			};
+
+			if (getJoystickValue(BtnEDown) && !FifthBall) {
+				setMotorTarget(BallRelease,90,67);
+				FifthBall = true;
+				setTouchLEDColor(LED, colorBlue);
+				sleep(100);
+				if (!getJoystickValue(BtnEDown) && BallReleased && FifthBall) {
+					driveDistance(-200);
+					sleep(1200);
+					setMotorTarget(BallRelease,180,67);
+					sleep(100);
+					FifthBall = false;
+					} else if (!getJoystickValue(BtnEDown)&& !BallReleased && FifthBall) {
+					driveDistance(-200);
+					sleep(1200);
+					setMotorTarget(BallRelease,0,67);
+					sleep(100);
+					FifthBall = false;
+				};
+				FifthBall = false;
+			};
 		};
 
 		// Ball Lift
@@ -386,7 +415,7 @@ task main() { // main program code
 };																								                                                        //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //																			 				End of Code																								//
-//																   		Last Compile: 22/02/2020, 1515														   		  //
+//																   		Last Compile: 09/03/2020, 1934														   		  //
 //																			  		By Joseph Greening																					//
 //																			2917X	/ 3428B VIQC Squared Away																		//
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
