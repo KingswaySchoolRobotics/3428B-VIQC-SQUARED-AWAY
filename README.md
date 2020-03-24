@@ -4,6 +4,5 @@ This Repository is for TEAM 3428B of Kingsway School to Collaborate with Free Ra
 
 The Following Overwrites the Lisence of the Repository
 
- -This Repository may not be used by a VIQC competition Team -
- 
- - In no part may any of this code be used on any Vex IQ Compition Robot at any Level or Event without Explicit Written Permission by the Creator: (josephgreeningnz@gmail.com)-
+ *This Repository may not be used by a VIQC competition Team
+ * In no part may any of this code be used on any Vex IQ Compition Robot at any Level or Event without Explicit Written Permission by the Creator: (josephgreeningnz@gmail.com)
