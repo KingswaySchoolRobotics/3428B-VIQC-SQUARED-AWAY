@@ -6,3 +6,4 @@ The Following Overwrites the Lisence of the Repository
 
  * This Repository may not be used by a VIQC competition Team
  * In no part may any of this code be used on any Vex IQ Compition Robot at any Level or Event without Explicit Written Permission by the Creator: (josephgreeningnz@gmail.com)
+ * Schools or other Education Facilities may use this Repository for teaching only, not competition.
